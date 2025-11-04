@@ -1,0 +1,57 @@
+<!-- Header -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm dark:shadow-slate-800">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center text-3xl font-bold">
+                    <span class="text-slate-800 dark:text-slate-200">[24]</span><span class="text-orange-500">7</span><span class="text-slate-800 dark:text-slate-200">.ai</span>
+                </div>
+                <span class="hidden sm:block text-xl font-semibold text-slate-700 dark:text-slate-300 border-l border-slate-200 dark:border-slate-700 pl-4">
+                    HR Operations Toolkit
+                </span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <!-- Search Bar -->
+                <div class="hidden md:block relative">
+                    <input type="text"
+                           id="search-input"
+                           placeholder="Search tools..."
+                           class="w-64 px-4 py-2 pl-10 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                </div>
+
+                <!-- Help Button -->
+                <button id="help-button" class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" aria-label="Open help modal">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" aria-label="Toggle dark mode">
+                    <span id="theme-icon-sun" class="hidden">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </span>
+                    <span id="theme-icon-moon">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden pb-3">
+            <div class="relative">
+                <input type="text"
+                       id="mobile-search-input"
+                       placeholder="Search tools..."
+                       class="w-full px-4 py-2 pl-10 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+            </div>
+        </div>
+    </div>
+</header>
