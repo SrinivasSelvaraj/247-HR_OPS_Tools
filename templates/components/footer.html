@@ -1,0 +1,30 @@
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-slate-200 dark:border-slate-800">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        <p>This is an unofficial tool developed internally by HR-Ops (010111628). For internal operational use only.</p>
+        <p class="mt-2">&copy; 2025 [24]7.ai. All Rights Reserved.</p>
+
+        <!-- Quick Links -->
+        <div class="mt-6 flex justify-center space-x-6">
+            <a href="#" onclick="document.getElementById('help-modal').classList.remove('hidden')" class="hover:text-orange-500 transition-colors">
+                <i class="fas fa-question-circle mr-1"></i> Help
+            </a>
+            <a href="#" onclick="showAbout()" class="hover:text-orange-500 transition-colors">
+                <i class="fas fa-info-circle mr-1"></i> About
+            </a>
+            <a href="#" onclick="showContact()" class="hover:text-orange-500 transition-colors">
+                <i class="fas fa-envelope mr-1"></i> Contact
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+function showAbout() {
+    alert('HR Operations Toolkit v1.0\n\nA comprehensive suite of tools designed to streamline HR operations and improve efficiency.\n\nDeveloped by [24]7.ai HR Operations Team.');
+}
+
+function showContact() {
+    alert('For support or questions:\n\nEmail: hr-ops@247-inc.com\nExtension: 010111628\n\nResponse time: Usually within 24 hours.');
+}
+</script>
