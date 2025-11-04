@@ -1,0 +1,114 @@
+<!-- Help Modal -->
+<div id="help-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+    <div id="help-modal-content" class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Toolkit Help & Documentation</h2>
+            <button id="modal-close-button" class="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                    <i class="fas fa-book mr-2 text-orange-500"></i>Getting Started
+                </h3>
+                <p class="text-slate-600 dark:text-slate-300 mb-4">
+                    The HR Operations Toolkit provides six essential tools to streamline your daily HR tasks. Click on any tool card to access its functionality.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200 mb-2">Quick Tips:</h4>
+                        <ul class="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Use the search bar to find tools quickly</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Click the help icon for tool-specific guidance</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Dark mode is available for comfortable viewing</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>All files are processed securely on our servers</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200 mb-2">File Guidelines:</h4>
+                        <ul class="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+                            <li><i class="fas fa-info-circle text-blue-500 mr-2"></i>Max file size: 16MB per upload</li>
+                            <li><i class="fas fa-info-circle text-blue-500 mr-2"></i>Supported image formats: PNG, JPG, JPEG</li>
+                            <li><i class="fas fa-info-circle text-blue-500 mr-2"></i>PDF processing available for PDF documents</li>
+                            <li><i class="fas fa-info-circle text-blue-500 mr-2"></i>Bulk uploads supported via ZIP files</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                    <i class="fas fa-tools mr-2 text-orange-500"></i>Tool Descriptions
+                </h3>
+                <div class="space-y-3">
+                    <div class="border-l-4 border-orange-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">ID Image Processor</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Crop and optimize candidate images for ID cards and HRMS. Supports both single and bulk processing.</p>
+                    </div>
+
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">Complete PDF Toolkit</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Merge, split, compress, add watermarks, and convert PDF files. All processing done offline.</p>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">Employee Exit Verifier</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Instantly check candidate exit status and Full & Final Settlement details from HR database.</p>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">Candidate Experience Calculator</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Analyze and calculate total work experience from previous companies and certificates.</p>
+                    </div>
+
+                    <div class="border-l-4 border-red-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">Offer Release Tracker</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Track offer releases with timestamps, status updates, and candidate communication logs.</p>
+                    </div>
+
+                    <div class="border-l-4 border-yellow-500 pl-4">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">Employee ID Availability</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Check and generate available employee IDs following company patterns and allocation rules.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                    <i class="fas fa-shield-alt mr-2 text-orange-500"></i>Security & Privacy
+                </h3>
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <p class="text-sm text-slate-700 dark:text-slate-300">
+                        <i class="fas fa-lock mr-2 text-blue-500"></i>
+                        All uploaded files are processed securely and automatically deleted after 24 hours. No personal data is stored permanently. This toolkit complies with company data security policies.
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                    <i class="fas fa-headset mr-2 text-orange-500"></i>Support & Documentation
+                </h3>
+                <p class="text-slate-600 dark:text-slate-300 mb-4">
+                    For detailed guides, video tutorials, and comprehensive documentation, please visit the official company wiki page for the HR Operations Toolkit.
+                </p>
+
+                <div class="flex flex-wrap gap-3">
+                    <a href="#" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors text-sm">
+                        <i class="fas fa-book mr-2"></i>View Documentation
+                    </a>
+                    <a href="#" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-sm">
+                        <i class="fas fa-video mr-2"></i>Video Tutorials
+                    </a>
+                    <a href="#" onclick="showContact()" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm">
+                        <i class="fas fa-envelope mr-2"></i>Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
