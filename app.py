@@ -3,7 +3,7 @@ from config import BaseConfig
 import logging
 import os
 
-def create_app(config_class=Config):
+def create_app(config_class=BaseConfig):
     """
     Application factory pattern for Flask app.
     """
