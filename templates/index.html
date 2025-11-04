@@ -47,7 +47,7 @@
          data-description="{{ tool.description|lower }}"
          data-category="{{ tool.category or 'document' }}"
          data-popularity="{{ tool.popularity or 5 }}"
-         data-recent="{{ tool.recent_added ? '1' : '0' }}"
+         data-recent="{{ '1' if tool.recent_added else '0' }}"
          style="animation-delay: 0.{{ loop.index }}s;"
          onclick="window.location.href='{{ tool.url }}'">
 
