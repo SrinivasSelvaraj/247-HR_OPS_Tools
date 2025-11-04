@@ -1,0 +1,45 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-WTF==1.1.1
+Werkzeug==2.3.7
+
+# Image processing
+Pillow==10.0.1
+opencv-python==4.8.1.78
+
+# PDF processing
+PyPDF2==3.0.1
+pdf2image==1.16.3
+reportlab==4.0.4
+
+# File handling
+python-magic==0.4.27
+zipfile36==0.1.3
+
+# Security
+bcrypt==4.0.1
+cryptography==41.0.4
+
+# Database
+SQLAlchemy==2.0.21
+
+# Development and debugging
+flask-debugtoolbar==0.13.1
+pytest-flask==1.2.0
+
+# Excel/CSV processing
+openpyxl==3.1.2
+pandas==2.1.1
+
+# Date/time handling
+python-dateutil==2.8.2
+
+# Email notifications
+flask-mail==0.9.1
+
+# Caching
+Flask-Caching==2.1.0
+
+# Monitoring and logging
+gunicorn==21.2.0
