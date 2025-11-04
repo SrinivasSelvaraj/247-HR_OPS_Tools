@@ -3,11 +3,17 @@ from config import BaseConfig, config
 import logging
 import os
 
-def create_app(config_class=BaseConfig):
+def create_app(config_class=None):
     """
     Application factory pattern for Flask app.
     """
     app = Flask(__name__)
+
+    # Determine which config to use
+    if config_class is None:
+        env = os.environ.get('FLASK_ENV', 'development')
+        config_class = config.get(env, BaseConfig)
+
     app.config.from_object(config_class)
 
     # Configure logging
