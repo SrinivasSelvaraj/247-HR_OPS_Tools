@@ -1,61 +1,43 @@
-# Core Flask dependencies
+# -------------------------
+# Core framework
+# -------------------------
 Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-WTF==1.1.1
 Werkzeug==2.3.7
+gunicorn==21.2.0
 
-# Image processing
-Pillow==10.0.1
-opencv-python==4.8.1.78
+# -------------------------
+# Data & utilities
+# -------------------------
+numpy==1.26.4
+pandas==2.2.2
+python-dateutil==2.8.2
+openpyxl==3.1.2
 
-# PDF processing
+# -------------------------
+# Image processing (SERVER SAFE)
+# -------------------------
+opencv-python-headless==4.9.0.80
+Pillow==10.2.0
+
+# -------------------------
+# PDF processing (NO system deps)
+# -------------------------
+PyMuPDF==1.23.26
 PyPDF2==3.0.1
-pdf2image==1.16.3
 reportlab==4.0.4
 python-docx==0.8.11
 pdfplumber==0.10.2
 
-# File handling
-python-magic==0.4.27
-zipfile36==0.1.3
-
+# -------------------------
 # Security
+# -------------------------
 bcrypt==4.0.1
 cryptography==41.0.4
 
-# Database
-SQLAlchemy==2.0.21
-
-# Development and debugging
-flask-debugtoolbar==0.13.1
-pytest-flask==1.2.0
-
-# Excel/CSV processing
-openpyxl==3.1.2
-pandas==2.1.1
-
-# Date/time handling
-python-dateutil==2.8.2
-
-# Email notifications
-flask-mail==0.9.1
-
-# Caching
+# -------------------------
+# Optional Flask extensions (only if used)
+# -------------------------
 Flask-Caching==2.1.0
-
-# Monitoring and logging
-gunicorn==21.2.0
-Flask==2.3.3
-Werkzeug==2.3.7
-
-gunicorn==21.2.0
-
-numpy==1.26.4
-pandas==2.2.2
-
-opencv-python-headless==4.9.0.80
-Pillow==10.2.0
-PyMuPDF==1.23.26
-
-python-dateutil
-
+Flask-Mail==0.9.1
+Flask-WTF==1.1.1
+Flask-SQLAlchemy==3.0.5
