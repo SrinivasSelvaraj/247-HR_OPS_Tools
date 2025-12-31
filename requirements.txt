@@ -12,6 +12,8 @@ opencv-python==4.8.1.78
 PyPDF2==3.0.1
 pdf2image==1.16.3
 reportlab==4.0.4
+python-docx==0.8.11
+pdfplumber==0.10.2
 
 # File handling
 python-magic==0.4.27
@@ -43,3 +45,8 @@ Flask-Caching==2.1.0
 
 # Monitoring and logging
 gunicorn==21.2.0
+Flask
+pandas
+pyarrow
+openpyxl
+gunicorn

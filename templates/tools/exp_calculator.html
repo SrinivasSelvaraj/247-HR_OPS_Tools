@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Experience Calculator{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb Navigation -->
+    <nav class="mb-6 text-sm">
+        <ol class="flex items-center space-x-2">
+            <li><a href="{{ url_for('index') }}" class="text-orange-500 hover:text-orange-600">Home</a></li>
+            <li><span class="text-slate-400">/</span></li>
+            <li class="text-slate-600 dark:text-slate-400">Candidate Experience Calculator</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+            <i class="fas fa-calculator text-orange-500 mr-3"></i>
+            Candidate Experience Calculator
+        </h1>
+        <p class="text-lg text-slate-600 dark:text-slate-300">
+            Analyze and aggregate candidate work histories to compute total experience, detect gaps, and compare against role requirements — fast and reliable.
+        </p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <div class="form-section bg-white dark:bg-slate-800 rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4"><i class="fas fa-list"></i> Enter Work Experience</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Add company, start date and end date for each role. Use the interactive controls to calculate totals and spot gaps.</p>
+
+            <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
+                <strong class="text-blue-900 dark:text-blue-100">How to Use</strong>
+                <ul class="list-disc ml-5 text-sm mt-2 text-blue-800 dark:text-blue-100">
+                    <li><strong>Company Name:</strong> Enter the employer's name.</li>
+                    <li><strong>Start Date (DOJ):</strong> Type or paste dates in flexible formats: <code>2020-01-15</code> (ISO), <code>15-01-2020</code> (DD-MM-YYYY), or even <code>15-1-2020</code> (single-digit month). Separators like <code>/</code> and <code>.</code> also work.</li>
+                    <li><strong>End Date (Relieving):</strong> Leave blank for current/ongoing role. Otherwise, use the same flexible date formats.</li>
+                    <li><strong>Remove a Row:</strong> Click the trash icon (🗑) to delete that company entry.</li>
+                    <li><strong>Automatic Checks:</strong> Tool detects overlapping employment periods and flags any role started before age 18.</li>
+                </ul>
+            </div>
+
+            <!-- Placeholder form - existing backend expects POST to /exp-calculator/calculate -->
+            <form id="exp-form" class="space-y-4">
+                <div id="experience-rows" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+                        <input type="text" placeholder="Company Name" class="px-3 py-2 border rounded bg-white dark:bg-slate-700 company-input">
+                        <div class="relative min-w-0 group">
+                            <input type="text" class="px-3 py-2 pr-10 border rounded bg-white dark:bg-slate-700 start-input w-full text-sm" placeholder="DD-MM-YYYY" maxlength="10">
+                            <input type="date" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-0 cursor-pointer date-picker-hidden" />
+                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-orange-500 text-sm transition"><i class="fas fa-calendar"></i></span>
+                        </div>
+                        <div class="relative min-w-0 group">
+                            <input type="text" class="px-3 py-2 pr-10 border rounded bg-white dark:bg-slate-700 end-input w-full text-sm" placeholder="DD-MM-YYYY" maxlength="10">
+                            <input type="date" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-0 cursor-pointer date-picker-hidden" />
+                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-orange-500 text-sm transition"><i class="fas fa-calendar"></i></span>
+                        </div>
+                        <button type="button" class="delete-row px-3 py-2 text-red-600 hover:text-red-700 text-lg w-full md:w-auto" title="Remove this row">🗑</button>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="add-row" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded">Add another company</button>
+                    <button type="button" id="calculate" class="px-4 py-2 bg-orange-500 text-white rounded">Calculate</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section bg-white dark:bg-slate-800 rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4"><i class="fas fa-chart-bar"></i> Results</h3>
+            <div id="results" class="text-sm text-slate-700 dark:text-slate-300">
+                <p>No calculation yet. Enter experiences and click Calculate.</p>
+            </div>
+            <!-- Salary lookup removed (to be added later) -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Minimal client-side glue to prevent errors; the backend endpoints provide real calculations.
+let last_total_months = null;
+
+document.getElementById('calculate').addEventListener('click', async () => {
+    const rows = document.querySelectorAll('#experience-rows .grid');
+    const data = [];
+    let unnamedCount = 0;
+    rows.forEach(r => {
+        let company = r.querySelector('.company-input').value.trim();
+        const startRaw = r.querySelector('.start-input').value;
+        const endRaw = r.querySelector('.end-input').value;
+        const startParsed = parseDateString(startRaw);
+        const endParsed = parseDateString(endRaw);
+        if (startParsed.error) {
+            // Store error for later display
+            data.push({ company, error: startParsed.error });
+        } else if (startParsed.valid) {
+            // If company name not provided, assign a sequential default
+            if (!company) {
+                unnamedCount += 1;
+                company = `Company  ${unnamedCount}`;
+            }
+            data.push({ company, start_date: startParsed.valid, end_date: endParsed.valid });
+        }
+    });
+
+    if (data.length === 0) { alert('Please enter at least one experience row'); return; }
+
+    // Check for format errors first
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].error) {
+            alert(`Row ${i+1}: ${data[i].error}`);
+            return;
+        }
+    }
+
+    // date validation: start must not be after end
+    for (let i=0;i<data.length;i++){
+        const s = data[i].start_date;
+        const e = data[i].end_date;
+        if (!s) { alert(`Row ${i+1}: Invalid start date format.`); return; }
+        if (s && (new Date(s) < MIN_DATE || new Date(s) > MAX_DATE)) { alert(`Row ${i+1}: Start date out of allowed range (1947-01-01 to 2099-12-31).`); return; }
+        if (e){
+            if (!e) { alert(`Row ${i+1}: Invalid end date format.`); return; }
+            if (new Date(e) < MIN_DATE || new Date(e) > MAX_DATE) { alert(`Row ${i+1}: End date out of allowed range (1947-01-01 to 2099-12-31).`); return; }
+            if (new Date(s) > new Date(e)){
+                alert(`Row ${i+1}: DOJ/start date is after relieving/end date. Please correct.`);
+                return;
+            }
+        }
+    }
+
+    const form = new FormData();
+    data.forEach(exp => form.append('experiences[]', `company=${exp.company};start_date=${exp.start_date};end_date=${exp.end_date}`));
+
+    const resp = await fetch('/exp-calculator/calculate', { method: 'POST', body: form });
+    const result = await resp.json();
+    if (result.success) {
+        const s = result.stats;
+        const years = s.total_experience.years;
+        const months = s.total_experience.months;
+        const days = s.total_experience.days || 0;
+        const totalMonths = s.total_experience.total_months;
+        last_total_months = totalMonths;
+        // Compute rounded total months then average per company
+        const totalDaysAll = s.total_experience.days || 0;
+        const computeRoundedMonths = (months, days) => {
+            const extraFrom30 = Math.floor((days || 0) / 30);
+            const rem = (days || 0) % 30;
+            return months + extraFrom30 + (rem >= 15 ? 1 : 0);
+        };
+        const totalRoundedMonths = computeRoundedMonths(totalMonths, totalDaysAll);
+        let averageTenure = s.average_tenure;
+        if (s.total_companies) {
+            averageTenure = Math.floor(totalRoundedMonths / s.total_companies);
+        }
+        
+        // Format earliest DOJ as DD-MM-YYYY
+        const formatDateToDMY = (dateStr) => {
+            if (!dateStr) return dateStr;
+            const [y, m, d] = dateStr.split('-');
+            return `${d}-${m}-${y}`;
+        };
+        const earliestDOJFormatted = formatDateToDMY(s.earliest_start);
+
+        // build results with tabs: Overview + Details (nested tab contains table)
+        let html = `<div>
+            <div class="flex gap-2 mb-4 border-b border-slate-200 dark:border-slate-600">
+                <button id="tab-overview" class="px-4 py-2 font-semibold text-orange-500 border-b-2 border-orange-500">Overview</button>
+                <button id="tab-details" class="px-4 py-2 font-semibold text-slate-600 dark:text-slate-400 border-b-2 border-transparent hover:text-slate-800 dark:hover:text-slate-300">Experience Details</button>
+            </div>
+            <div id="panel-overview" class="pb-3 bg-blue-50 dark:bg-slate-700 p-4 rounded">
+                <p class="mb-2"><strong class="text-slate-900 dark:text-white">Total Companies:</strong> <span class="text-blue-600 dark:text-blue-300">${s.total_companies}</span></p>
+                <p class="mb-2"><strong class="text-slate-900 dark:text-white">Total Experience:</strong> <span class="text-blue-600 dark:text-blue-300">${years} years ${months} months</span></p>
+                <p class="mb-3"><strong class="text-slate-900 dark:text-white">Total with days:</strong> <span class="text-blue-600 dark:text-blue-300">${totalMonths} months ${days} days</span></p>
+                <p class="mb-2"><strong class="text-slate-900 dark:text-white">Rounded Experience:</strong> <span class="text-blue-600 dark:text-blue-300">${totalRoundedMonths} months</span></p>
+                ${s.date_18 ? `<p class="mt-3 mb-2"><strong class="text-slate-900 dark:text-white">Legal date to start working:</strong> <span class="text-green-600 dark:text-green-300 font-semibold">${s.date_18}</span> (earliest DOJ: ${earliestDOJFormatted})</p>` : ''}
+                ${s.underage ? `<div class="mt-3 p-3 bg-red-100 dark:bg-red-900 border-l-4 border-red-400 rounded text-red-800 dark:text-red-100"><strong>⚠️ Underage Employment Detected:</strong> Candidate has experience starting before turning 18:<ul class="ml-5 mt-2">${s.underage_experiences.map(u=>`<li>• ${u.company} — ${u.start}</li>`).join('')}</ul></div>` : ''}
+                ${ (s.overlaps && s.overlaps.length) ? `<div class="mt-3 p-3 bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-400 rounded text-yellow-800 dark:text-yellow-100"><strong>⚠️ Dual Employment Detected:</strong><ul class="ml-5 mt-2">${s.overlaps.map(o=>`<li>• ${o.company_a} &amp; ${o.company_b} — ${o.from} to ${o.to} (${o.months} months)</li>`).join('')}</ul></div>` : '' }
+            </div>
+            <div id="panel-details" class="hidden bg-slate-50 dark:bg-slate-700 p-4 rounded">
+                <div class="mt-3 overflow-x-auto"><table class="w-full text-sm border-collapse">
+                    <colgroup>
+                        <col style="width:20%">
+                        <col style="width:44%">
+                        <col style="width:12%">
+                        <col style="width:12%">
+                        <col style="width:12%">
+                    </colgroup>
+                    <thead><tr class="bg-orange-100 dark:bg-orange-900"><th class="p-3 text-left font-semibold text-slate-900 dark:text-white">COMPANY</th><th class="p-3 text-left font-semibold text-slate-900 dark:text-white">DATES</th><th class="p-3 text-left font-semibold text-slate-900 dark:text-white">MONTHS</th><th class="p-3 text-left font-semibold text-slate-900 dark:text-white">DAYS</th><th class="p-3 text-left font-semibold text-slate-900 dark:text-white">ROUND OFF</th></tr></thead>
+                    <tbody>
+                    ${ (s.per_experience && s.per_experience.length) ? (() => {
+                        const formatDate = (d) => {
+                            if (!d) return 'Present';
+                            const [y,m,day] = d.split('-');
+                            return `${day}-${m}-${y}`;
+                        };
+                                        // helper to convert months+days into rounded months: add floor(days/30) then +1 if remaining >=15
+                                        const computeRoundedMonths = (months, days) => {
+                                            const extraFrom30 = Math.floor((days || 0) / 30);
+                                            const rem = (days || 0) % 30;
+                                            return months + extraFrom30 + (rem >= 15 ? 1 : 0);
+                                        };
+
+                                        let totalMonths = 0, totalDays = 0;
+                                        const rows = s.per_experience.map((pe, idx) => {
+                                            totalMonths += pe.months;
+                                            totalDays += pe.days;
+                                            const bgClass = idx % 2 === 0 ? 'bg-white dark:bg-slate-600' : 'bg-slate-50 dark:bg-slate-700';
+                                            // per-experience rounded months
+                                            const perRounded = computeRoundedMonths(pe.months, pe.days);
+                                            return `<tr class="border-t ${bgClass}"><td class="p-3">${pe.company||''}</td><td class="p-3">${formatDate(pe.start_date)} — ${formatDate(pe.end_date)}</td><td class="p-3 font-semibold">${pe.months}</td><td class="p-3 font-semibold">${pe.days}</td><td class="p-3 font-semibold text-orange-600 dark:text-orange-400">${perRounded}M</td></tr>`;
+                                        }).join('');
+                                        // Normalize days to months: if days >= 30, convert to months
+                                        let displayMonths = totalMonths;
+                                        let displayDays = totalDays;
+                                        if (displayDays >= 30) {
+                                            displayMonths += Math.floor(displayDays / 30);
+                                            displayDays = displayDays % 30;
+                                        }
+                                        // Compute rounded total months according to rule
+                                        const totalsAvg = computeRoundedMonths(displayMonths, displayDays);
+                                        const totalsRow = `<tr class="border-t font-bold bg-orange-200 dark:bg-orange-800 text-slate-900 dark:text-white"><td class="p-3">TOTAL</td><td class="p-3"></td><td class="p-3">${displayMonths}</td><td class="p-3">${displayDays}</td><td class="p-3">${totalsAvg}M</td></tr>`;
+                        return rows + totalsRow;
+                    })() : '' }
+                    </tbody>
+                </table></div>
+            </div>
+        </div>`;
+
+        document.getElementById('results').innerHTML = html;
+        // attach tab handlers
+        document.getElementById('tab-overview').addEventListener('click', () => {
+            document.getElementById('panel-overview').classList.remove('hidden');
+            document.getElementById('panel-details').classList.add('hidden');
+            document.getElementById('tab-overview').classList.add('text-orange-500', 'border-b-orange-500');
+            document.getElementById('tab-overview').classList.remove('text-slate-600', 'dark:text-slate-400', 'border-b-transparent');
+            document.getElementById('tab-details').classList.remove('text-orange-500', 'border-b-orange-500');
+            document.getElementById('tab-details').classList.add('text-slate-600', 'dark:text-slate-400', 'border-b-transparent');
+        });
+        document.getElementById('tab-details').addEventListener('click', () => {
+            document.getElementById('panel-overview').classList.add('hidden');
+            document.getElementById('panel-details').classList.remove('hidden');
+            document.getElementById('tab-details').classList.add('text-orange-500', 'border-b-orange-500');
+            document.getElementById('tab-details').classList.remove('text-slate-600', 'dark:text-slate-400', 'border-b-transparent');
+            document.getElementById('tab-overview').classList.remove('text-orange-500', 'border-b-orange-500');
+            document.getElementById('tab-overview').classList.add('text-slate-600', 'dark:text-slate-400', 'border-b-transparent');
+        });
+    } else {
+        document.getElementById('results').innerText = result.error || 'Calculation failed';
+    }
+});
+
+document.getElementById('add-row').addEventListener('click', () => {
+    const container = document.getElementById('experience-rows');
+    const el = document.createElement('div');
+    el.className = 'grid grid-cols-1 md:grid-cols-4 gap-3 items-center';
+    el.innerHTML = `<input type="text" placeholder="Company Name" class="px-3 py-2 border rounded bg-white dark:bg-slate-700 company-input">`+
+                   `<div class="relative min-w-0 group"><input type="text" class="px-3 py-2 pr-10 border rounded bg-white dark:bg-slate-700 start-input w-full text-sm" placeholder="DD-MM-YYYY" maxlength="10"><input type="date" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-0 cursor-pointer date-picker-hidden" /><span class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-orange-500 text-sm transition"><i class="fas fa-calendar"></i></span></div>`+
+                   `<div class="relative min-w-0 group"><input type="text" class="px-3 py-2 pr-10 border rounded bg-white dark:bg-slate-700 end-input w-full text-sm" placeholder="DD-MM-YYYY" maxlength="10"><input type="date" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-0 cursor-pointer date-picker-hidden" /><span class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-orange-500 text-sm transition"><i class="fas fa-calendar"></i></span></div>`+
+                   `<button type="button" class="delete-row px-3 py-2 text-red-600 hover:text-red-700 text-lg w-full md:w-auto" title="Remove this row">🗑</button>`;
+    container.appendChild(el);
+    attachDatePickerHandlers(el);
+});
+
+// attach delete event via event delegation
+document.getElementById('experience-rows').addEventListener('click', (e) => {
+    if (e.target && e.target.classList.contains('delete-row')){
+        const row = e.target.closest('div.grid');
+        if (row) row.remove();
+    }
+});
+
+// Smart Date Parsing: accepts YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY formats
+// Automatically normalizes to YYYY-MM-DD for backend processing
+// Returns null with error message if format is invalid
+function parseDateString(s){
+    if(!s) return { valid: null, error: null };
+    s = s.trim();
+    
+    // Check character count constraints before parsing
+    // Valid formats: YYYY-MM-DD (10), DD-MM-YYYY (10), DD/MM/YYYY (10), DD.MM.YYYY (10)
+    // Also allow single digit: D-M-YYYY (8), YYYY-M-D (8)
+    if (s.length < 8 || s.length > 10) {
+        return { valid: null, error: 'Invalid date format: dates must be 8-10 characters (e.g., 15-1-2020 or 15-01-2020)' };
+    }
+    
+    // Try YYYY-MM-DD format (ISO standard)
+    if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)) {
+        const parts = s.split('-');
+        if(parts.length === 3 && parts[0].length === 4) {
+            const yyyy = parts[0], mm = parts[1], dd = parts[2];
+            const normalized = `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            return { valid: normalized, error: null };
+        }
+    }
+    
+    // Try DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY format
+    const alt = s.replace(/[\.\/]/g,'-');
+    if(/^\d{1,2}-\d{1,2}-\d{4}$/.test(alt)) {
+        const parts = alt.split('-');
+        if(parts.length === 3 && parts[2].length === 4) {
+            const dd = parts[0], mm = parts[1], yyyy = parts[2];
+            const normalized = `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            return { valid: normalized, error: null };
+        }
+    }
+    
+    return { valid: null, error: 'Invalid date format: use YYYY-MM-DD or DD-MM-YYYY format' };
+}
+
+// Date range constraints (1947-01-01 to 2099-12-31)
+const MIN_DATE = new Date('1947-01-01');
+const MAX_DATE = new Date('2099-12-31');
+
+// Format input to DD-MM-YYYY as user types
+function formatDateInput(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '-' + value.substring(2);
+    }
+    if (value.length >= 5) {
+        value = value.substring(0, 5) + '-' + value.substring(5, 9);
+    }
+    input.value = value;
+}
+
+// Attach date picker handlers to a row
+function attachDatePickerHandlers(row) {
+    const dateInputs = row.querySelectorAll('.date-picker-hidden');
+    const textInputs = [row.querySelector('.start-input'), row.querySelector('.end-input')];
+    
+    dateInputs.forEach((dateInput, idx) => {
+        const textInput = textInputs[idx];
+        
+        // When calendar selection changes, sync to text field
+        dateInput.addEventListener('change', () => {
+            if (dateInput.value) {
+                const [y, m, d] = dateInput.value.split('-');
+                textInput.value = `${d}-${m}-${y}`; // display as DD-MM-YYYY
+            }
+        });
+
+        // Click the small invisible date input (positioned over the icon) to open picker
+        dateInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const parseResult = parseDateString(textInput.value);
+            if (parseResult.valid) {
+                dateInput.value = parseResult.valid;
+            }
+            if (typeof dateInput.showPicker === 'function') {
+                try { dateInput.showPicker(); } catch (err) { dateInput.click(); }
+            } else {
+                // fallback to click (may open in some browsers)
+                dateInput.click();
+            }
+        });
+
+        // Also allow clicking the visible calendar icon to open the picker
+        const group = dateInput.closest('.group');
+        if (group) {
+            const calSpan = group.querySelector('span');
+            if (calSpan) {
+                calSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const parseResult = parseDateString(textInput.value);
+                    if (parseResult.valid) {
+                        dateInput.value = parseResult.valid;
+                    }
+                    if (typeof dateInput.showPicker === 'function') {
+                        try { dateInput.showPicker(); } catch (err) { dateInput.click(); }
+                    } else {
+                        dateInput.click();
+                    }
+                });
+            }
+        }
+        
+        // Format date input as user types in the text field
+        textInput.addEventListener('input', () => {
+            formatDateInput(textInput);
+        });
+    });
+}
+
+// Attach handlers to initial rows on page load
+window.addEventListener('load', () => {
+    const rows = document.querySelectorAll('#experience-rows .grid');
+    rows.forEach(row => attachDatePickerHandlers(row));
+});
+</script>
+{% endblock %}

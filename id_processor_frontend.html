@@ -17,7 +17,7 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     animation: { 'fade-in': 'fadeIn 0.5s ease-out forwards', 'pulse-soft': 'pulseSoft 2s ease-in-out infinite' },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0') } },
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
                         pulseSoft: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.8' } }
                     }
                 }
@@ -39,40 +39,108 @@
 <body class="bg-slate-50 dark:bg-slate-900 font-sans min-h-screen">
 
     <!-- Header -->
-    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
+    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm dark:shadow-slate-800">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-4">
-                    <div class="flex items-center text-2xl font-bold">
+                    <div class="flex items-center text-3xl font-bold">
                         <span class="text-slate-800 dark:text-slate-200">[24]</span><span class="text-orange-500">7</span><span class="text-slate-800 dark:text-slate-200">.ai</span>
                     </div>
-                    <h1 class="text-xl font-semibold text-slate-700 dark:text-slate-300">ID Photo Processor</h1>
+                    <span class="hidden sm:block text-xl font-semibold text-slate-700 dark:text-slate-300 border-l border-slate-200 dark:border-slate-700 pl-4">
+                        HR Operations Toolkit
+                    </span>
                 </div>
-                <button onclick="toggleTheme()" class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i id="theme-icon" class="fas fa-moon h-5 w-5"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <!-- Search Bar -->
+                    <div class="hidden md:block relative">
+                        <input type="text"
+                               id="search-input"
+                               placeholder="Search tools..."
+                               class="w-64 px-4 py-2 pl-10 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    </div>
+
+                    <!-- Help Button -->
+                    <button id="help-button" class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" aria-label="Open help modal">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" aria-label="Toggle dark mode">
+                        <span id="theme-icon-sun" class="hidden">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </span>
+                        <span id="theme-icon-moon">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden pb-3">
+                <div class="relative">
+                    <input type="text"
+                           id="mobile-search-input"
+                           placeholder="Search tools..."
+                           class="w-full px-4 py-2 pl-10 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <main class="container mx-auto px-4 py-8 max-w-7xl">
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="mb-6 text-sm">
+            <ol class="flex items-center space-x-2">
+                <li><a href="/" class="text-orange-500 hover:text-orange-600">Home</a></li>
+                <li><span class="text-slate-400">/</span></li>
+                <li class="text-slate-600 dark:text-slate-400">ID Photo Processor</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                <i class="fas fa-id-card text-orange-500 mr-3"></i>
+                ID Photo Processor
+            </h1>
+            <p class="text-lg text-slate-600 dark:text-slate-300">
+                Crop and optimizffffe candidate images for ID cards and HRMS systems — quick and simple.
+            </p>
+        </div>
+
         <div class="grid lg:grid-cols-2 gap-8">
 
             <!-- Upload Section -->
             <div class="space-y-6">
                 <!-- Upload Area -->
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                        <i class="fas fa-camera text-orange-500 mr-2"></i>
-                        Upload Images
-                    </h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+                            <i class="fas fa-camera text-orange-500 mr-2"></i>
+                            Upload Images
+                        </h2>
+                        <button type="button" onclick="refreshPage()" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Clear All
+                        </button>
+                    </div>
 
                     <form id="upload-form" enctype="multipart/form-data" class="space-y-4">
                         <div class="file-upload-area border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 transition-colors"
                              onclick="document.getElementById('file-input').click()"
                              ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                            <input type="file" id="file-input" name="file_input" accept=".jpg,.jpeg,.png,.pdf,.zip" hidden onchange="handleFileSelect(event)">
+                            <input type="file" id="file-input" name="file_input" accept=".jpg,.jpeg,.png,.pdf,.zip" hidden onchange="handleFileSelect(event)" multiple>
                             <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-4"></i>
                             <p class="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Drop files here or click to browse
@@ -86,18 +154,18 @@
                         </div>
 
                         <div id="selected-file" class="hidden">
-                            <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-file text-orange-500"></i>
-                                    <span id="file-name" class="text-sm font-medium text-slate-700 dark:text-slate-300"></span>
-                                    <span id="file-size" class="text-xs text-slate-500"></span>
-                                </div>
-                                <button type="button" onclick="clearFile()" class="text-red-500 hover:text-red-700">
+                            <div id="selected-file-list" class="space-y-1 mb-2"></div>
+                            <div class="flex items-center justify-between p-2">
+                                <div class="text-xs text-slate-500">You can select up to 5 files</div>
+                                <button type="button" onclick="clearFile()" class="text-red-500 hover:text-red-700 px-2 py-1 rounded">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
 
+                        <div class="flex items-center space-x-2">
+                            <input id="output-name" type="text" placeholder="Optional output filename (without .zip)" class="flex-1 px-3 py-2 border rounded bg-white dark:bg-slate-700 text-sm" />
+                        </div>
                         <button type="submit" id="process-btn" disabled
                                 class="w-full px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             <i class="fas fa-magic mr-2"></i>
@@ -222,7 +290,7 @@
     </main>
 
     <script>
-        let selectedFile = null;
+        let selectedFiles = [];
 
         // Theme Management
         function initTheme() {
@@ -242,6 +310,28 @@
             updateThemeIcon(newTheme);
         }
 
+        function refreshPage() {
+            // Clear file input
+            document.getElementById('file-input').value = '';
+            // Hide selected file info
+            document.getElementById('selected-file').classList.add('hidden');
+            // Clear any displayed results or messages
+            const resultContainer = document.getElementById('result-container');
+            if (resultContainer) {
+                resultContainer.innerHTML = '';
+            }
+            // Clear any error messages
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(el => el.remove());
+            // Reset the form if it exists
+            document.getElementById('upload-form').reset();
+            // Clear any displayed images
+            const displayedImages = document.querySelectorAll('.result-image');
+            displayedImages.forEach(el => el.remove());
+            // Clear the selected file variable
+            selectedFiles = [];
+        }
+
         function updateThemeIcon(theme) {
             const icon = document.getElementById('theme-icon');
             icon.className = theme === 'dark' ? 'fas fa-sun h-5 w-5' : 'fas fa-moon h-5 w-5';
@@ -249,9 +339,9 @@
 
         // File Handling
         function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                setSelectedFile(file);
+            const files = Array.from(event.target.files || []);
+            if (files.length) {
+                setSelectedFiles(files.slice(0, 5));
             }
         }
 
@@ -259,9 +349,9 @@
             event.preventDefault();
             event.currentTarget.classList.remove('dragover');
 
-            const files = event.dataTransfer.files;
+            const files = Array.from(event.dataTransfer.files || []);
             if (files.length > 0) {
-                setSelectedFile(files[0]);
+                setSelectedFiles(files.slice(0, 5));
             }
         }
 
@@ -274,20 +364,27 @@
             event.currentTarget.classList.remove('dragover');
         }
 
-        function setSelectedFile(file) {
-            selectedFile = file;
+        function setSelectedFiles(files) {
+            selectedFiles = files;
 
             document.getElementById('selected-file').classList.remove('hidden');
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = `(${formatFileSize(file.size)})`;
-            document.getElementById('process-btn').disabled = false;
+            const listEl = document.getElementById('selected-file-list');
+            listEl.innerHTML = '';
+            files.forEach(f => {
+                const li = document.createElement('div');
+                li.className = 'flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg';
+                li.innerHTML = `<div class="flex items-center space-x-2"><i class="fas fa-file text-orange-500"></i><div class="truncate text-sm font-medium text-slate-700 dark:text-slate-300">${f.name}</div></div><div class="text-xs text-slate-400">${formatFileSize(f.size)}</div>`;
+                listEl.appendChild(li);
+            });
+
+            document.getElementById('process-btn').disabled = files.length === 0;
 
             // Clear previous results
             clearResults();
         }
 
         function clearFile() {
-            selectedFile = null;
+            selectedFiles = [];
             document.getElementById('file-input').value = '';
             document.getElementById('selected-file').classList.add('hidden');
             document.getElementById('process-btn').disabled = true;
@@ -318,13 +415,20 @@
         document.getElementById('upload-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!selectedFile) {
+            if (!selectedFiles || selectedFiles.length === 0) {
                 alert('Please select a file first');
                 return;
             }
 
+            if (selectedFiles.length > 5) {
+                alert('Please select up to 5 files');
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('file_input', selectedFile);
+            selectedFiles.forEach(f => formData.append('file_input', f));
+            const outputName = document.getElementById('output-name').value.trim();
+            if (outputName) formData.append('output_name', outputName);
 
             // Clear previous results
             clearResults();
@@ -333,7 +437,8 @@
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                const response = await fetch('/process-file', {
+                const basePath = window.location.pathname.replace(/\/$/, '');
+                const response = await fetch(basePath + '/process-file', {
                     method: 'POST',
                     body: formData
                 });
@@ -400,7 +505,8 @@
             const downloadLink = document.getElementById('download-link');
 
             resultImage.src = `data:image/jpeg;base64,${result.image_data}`;
-            downloadLink.href = result.download_url;
+            const basePath = window.location.pathname.replace(/\/$/, '');
+            downloadLink.href = result.download_url && result.download_url.startsWith('/') ? (basePath + result.download_url) : result.download_url;
             downloadLink.download = result.download_filename;
 
             imageResult.classList.remove('hidden');
@@ -412,7 +518,8 @@
             const zipResult = document.getElementById('zip-result');
             const downloadLink = document.getElementById('download-zip-link');
 
-            downloadLink.href = result.download_url;
+            const basePath = window.location.pathname.replace(/\/$/, '');
+            downloadLink.href = result.download_url && result.download_url.startsWith('/') ? (basePath + result.download_url) : result.download_url;
             downloadLink.download = result.download_filename;
 
             zipResult.classList.remove('hidden');

@@ -10,9 +10,13 @@ Features:
 - ID assignment history
 """
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, current_app
 from datetime import datetime
 import re
+import pandas as pd
+import os
+import zipfile
+from io import BytesIO
 
 id_checker_bp = Blueprint('id_checker', __name__,
                          template_folder='templates',
@@ -207,3 +211,136 @@ def get_statistics():
 
     except Exception as e:
         return jsonify({'error': f'Stats failed: {str(e)}'}), 500
+
+
+def _safe_str(v):
+    if pd.isna(v):
+        return ''
+    return str(v).strip()
+
+
+@id_checker_bp.route('/analyze', methods=['POST'])
+def analyze_file():
+    """Analyze uploaded Excel file or server path and return next available IDs per location."""
+    try:
+        # accept uploaded file
+        if 'file' in request.files and request.files['file'].filename:
+            file = request.files['file']
+            filename = (file.filename or '').lower()
+            # read into bytes buffer for possible zip handling
+            buf = BytesIO(file.read())
+            buf.seek(0)
+            # handle zip containing xlsx
+            if zipfile.is_zipfile(buf) or filename.endswith('.zip'):
+                z = zipfile.ZipFile(buf)
+                # find first xlsx/xls file
+                target_name = None
+                for name in z.namelist():
+                    if name.lower().endswith('.xlsx') or name.lower().endswith('.xls'):
+                        target_name = name
+                        break
+                if not target_name:
+                    return jsonify({'success': False, 'error': 'No Excel file found in ZIP'}), 400
+                with z.open(target_name) as f:
+                    data = f.read()
+                    df = pd.read_excel(BytesIO(data), header=None, skiprows=3, engine='openpyxl')
+            else:
+                buf.seek(0)
+                df = pd.read_excel(buf, header=None, skiprows=3, engine='openpyxl')
+        else:
+            server_path = request.form.get('server_path')
+            if not server_path or not os.path.exists(server_path):
+                return jsonify({'success': False, 'error': 'No file uploaded and server_path missing or not found'}), 400
+            df = pd.read_excel(server_path, header=None, skiprows=3, engine='openpyxl')
+
+        # ensure sufficient columns (we expect at least up to column S)
+        if df.shape[1] <= 18:
+            df = df.reindex(columns=range(19))
+
+        emp_col = 0
+        loc_col = 18
+        doj_col = 5
+
+        # group Bangalore + Shillong together in results (both use prefix 010)
+        GROUPS = {
+            'bangalore_shillong': '010',
+            'hyderabad': '030'
+        }
+
+        # initialize results for groups
+        results = {k: {'prefix': GROUPS[k], 'max_found': None, 'found_count': 0, 'next_id': None, 'last_doj': None} for k in GROUPS}
+
+        for _, row in df.iterrows():
+            empv = _safe_str(row[emp_col])
+            locv = _safe_str(row[loc_col]).lower()
+            if not empv or not locv:
+                continue
+
+            # map location text to a group
+            if 'bangalore' in locv or 'blr' in locv or 'bengaluru' in locv or 'shillong' in locv:
+                group_key = 'bangalore_shillong'
+            elif 'hyderabad' in locv or 'hyd' in locv:
+                group_key = 'hyderabad'
+            else:
+                continue
+
+            prefix = GROUPS[group_key]
+            digits = ''.join(ch for ch in empv if ch.isdigit())
+            if not digits:
+                continue
+
+            # try to parse numeric portion and track max
+            if digits.startswith(prefix):
+                suffix = digits[len(prefix):]
+                try:
+                    val = int(suffix) if suffix != '' else 0
+                except Exception:
+                    continue
+                rec = results[group_key]
+                rec['found_count'] += 1
+                if rec['max_found'] is None or val > rec['max_found']:
+                    rec['max_found'] = val
+
+            # capture DOJ from column F (doj_col)
+            try:
+                raw = row[doj_col]
+                dt = pd.to_datetime(raw, errors='coerce')
+                if not pd.isna(dt):
+                    # keep the most recent DOJ per group
+                    if rec.get('last_doj') is None or dt > rec.get('last_doj'):
+                        rec['last_doj'] = dt
+            except Exception:
+                pass
+
+        # compute next ids with padding and last_id full string
+        for k, rec in results.items():
+            if rec['max_found'] is None:
+                next_val = 1
+                suffix_len = 6
+                rec['last_id'] = None
+            else:
+                next_val = rec['max_found'] + 1
+                suffix_len = max(len(str(rec['max_found'])), 6)
+                rec['last_id'] = rec['prefix'] + str(rec['max_found']).zfill(suffix_len)
+            rec['next_id'] = rec['prefix'] + str(next_val).zfill(suffix_len)
+
+        # prepare clean results, include last_doj as ISO date string if available
+        clean_results = {}
+        for k, rec in results.items():
+            last_doj = None
+            if rec.get('last_doj') is not None:
+                try:
+                    last_doj = rec['last_doj'].strftime('%Y-%m-%d')
+                except Exception:
+                    last_doj = str(rec['last_doj'])
+            clean_results[k] = {
+                'last_id': rec.get('last_id'),
+                'next_id': rec.get('next_id'),
+                'last_doj': last_doj
+            }
+
+        return jsonify({'success': True, 'results': clean_results})
+
+    except Exception as e:
+        current_app.logger.exception('Error analyzing file')
+        return jsonify({'success': False, 'error': str(e)}), 500

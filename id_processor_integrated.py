@@ -6,13 +6,18 @@ Integrates the provided backend with a modern frontend
 import os
 import cv2
 import numpy as np
+
 import zipfile
 import io
 import time
 import traceback
 import fitz  # PyMuPDF
 import base64
-from flask import Flask, render_template, request, jsonify, send_from_directory
+import sys
+import tempfile
+import atexit
+import shutil
+from flask import Flask, render_template, render_template_string, request, jsonify, send_file, after_this_request
 from werkzeug.utils import secure_filename
 
 def get_path(relative_path):
@@ -24,13 +29,30 @@ def get_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # --- Flask App Setup ---
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__, template_folder='templates')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB limit
 app.config['SECRET_KEY'] = 'id-processor-secret-key'
 
 # Configuration
 MODEL_PATH = "face_detection_yunet_2023mar.onnx"  # Update with your actual model path
-STATIC_PATH = get_path("static")  # The path for temporary saved files
+# Create a temporary directory for processed files
+TEMP_DIR = tempfile.mkdtemp()
+# Map temporary filenames -> user-visible download filename
+TEMP_NAME_MAP = {}
+
+# Register cleanup function to remove temporary directory on application exit
+@atexit.register
+def cleanup_temp_files():
+    try:
+        shutil.rmtree(TEMP_DIR)
+    except Exception as e:
+        print(f"Error cleaning up temporary files: {e}")
+
+# Function to create a temporary file and return its path
+def create_temp_file(suffix=None):
+    temp_file = tempfile.NamedTemporaryFile(delete=False, dir=TEMP_DIR, suffix=suffix)
+    temp_file.close()
+    return temp_file.name
 
 def rotate_image(image, angle):
     """Rotate image by specified angle"""
@@ -87,21 +109,92 @@ def process_image(cv_image, model_path):
 @app.route('/')
 def index():
     """Main page"""
-    return render_template_string(open('id_processor_frontend.html').read())
+    return render_template_string(open('id_processor_frontend.html', encoding='utf-8').read())
 
 @app.route('/process-file', methods=['POST'])
 def process_file_route():
     """Process uploaded file"""
     try:
-        file = request.files.get('file_input')
-        if not file or not file.filename:
+        files = request.files.getlist('file_input')
+        if not files or len(files) == 0:
             return jsonify({'status': 'error', 'logs': ["❌ ERROR: No file selected."]})
 
+        # If multiple files were uploaded (non-zip), process them as a batch
+        if len(files) > 1:
+            logs = [f"🚀 Processing {len(files)} uploaded files..."]
+            success_count = 0
+            PHOTO_LIMIT = 5
+            if len(files) > PHOTO_LIMIT:
+                return jsonify({'status': 'error', 'logs': [f"❌ ERROR: You uploaded {len(files)} files; the limit is {PHOTO_LIMIT}."]})
+
+            output_zip_stream = io.BytesIO()
+            # Allow client to request a specific output zip name
+            requested_name = request.form.get('output_name', '').strip()
+            if requested_name:
+                safe_output_name = secure_filename(requested_name)
+                if not safe_output_name.lower().endswith('.zip'):
+                    safe_output_name = safe_output_name + '.zip'
+            else:
+                safe_output_name = 'processed_files.zip'
+
+            for f in files:
+                original_filename = f.filename
+                base_name, extension = os.path.splitext(original_filename)
+                logs.append(f"⏳ Processing '{original_filename}'...")
+
+                # Read image bytes and convert
+                try:
+                    if extension.lower() == '.pdf':
+                        doc = fitz.open(stream=f.read(), filetype='pdf')
+                        if doc.page_count > 0:
+                            page = doc[0]
+                            pix = page.get_pixmap()
+                            img_array = np.frombuffer(pix.tobytes('ppm'), np.uint8)
+                            cv_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                        else:
+                            logs[-1] = f"🟡 SKIPPING: PDF '{original_filename}' is empty."
+                            continue
+                    else:
+                        img_bytes = f.read()
+                        cv_image = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), cv2.IMREAD_COLOR)
+
+                    if cv_image is None:
+                        logs[-1] = f"🟡 SKIPPING: Cannot decode '{original_filename}'"
+                        continue
+
+                    processed_image, msg = process_image(cv_image, MODEL_PATH)
+                    if processed_image is not None:
+                        _, img_buffer = cv2.imencode('.jpg', processed_image)
+                        base = os.path.splitext(os.path.basename(original_filename))[0]
+                        with zipfile.ZipFile(output_zip_stream, 'a', zipfile.ZIP_DEFLATED, False) as output_zip:
+                            output_zip.writestr(f"{base}_processed.jpg", img_buffer.tobytes())
+                        logs[-1] = f"✅ SUCCESS: '{original_filename}'"
+                        success_count += 1
+                    else:
+                        logs[-1] = f"❌ FAILED: '{original_filename}': {msg}"
+                except Exception as e:
+                    logs[-1] = f"❌ FAILED: '{original_filename}': {str(e)}"
+
+            if success_count > 0:
+                temp_path = create_temp_file(suffix='.zip')
+                with open(temp_path, 'wb') as out_f:
+                    out_f.write(output_zip_stream.getvalue())
+
+                logs.append(f"🎉 DONE: Successfully processed {success_count} files. Click download to get the results ZIP.")
+                TEMP_NAME_MAP[os.path.basename(temp_path)] = safe_output_name
+                return jsonify({
+                    'status': 'success',
+                    'logs': logs,
+                    'download_url': f'/download/{os.path.basename(temp_path)}',
+                    'download_filename': safe_output_name
+                })
+            else:
+                return jsonify({'status': 'error', 'logs': logs + ["No images were successfully processed."]})
+
+        # Single-file handling (fallthrough)
+        file = files[0]
         original_filename = file.filename
         base_name, extension = os.path.splitext(original_filename)
-
-        # Ensure static directory exists
-        os.makedirs(STATIC_PATH, exist_ok=True)
 
         # --- SINGLE FILE and PDF processing ---
         if extension.lower() in ['.jpg', '.jpeg', '.png', '.pdf']:
@@ -131,18 +224,19 @@ def process_file_route():
                 _, buffer = cv2.imencode('.jpg', processed_image)
                 base64_image = base64.b64encode(buffer).decode('utf-8')
 
-                # Save to static folder for download
-                server_filename = f"{base_name}_{int(time.time())}.jpg"
-                output_path = os.path.join(STATIC_PATH, server_filename)
-                cv2.imwrite(output_path, processed_image)
+                # Save to temporary file
+                temp_path = create_temp_file(suffix='.jpg')
+                cv2.imwrite(temp_path, processed_image)
 
                 logs[-1] = f"✅ SUCCESS: {msg}"
+                display_name = f"{base_name}_processed.jpg"
+                TEMP_NAME_MAP[os.path.basename(temp_path)] = display_name
                 return jsonify({
                     'status': 'success',
                     'logs': logs,
                     'image_data': base64_image,
-                    'download_url': f'/static/{server_filename}',
-                    'download_filename': f"{base_name}_processed.jpg"
+                    'download_url': f'/download/{os.path.basename(temp_path)}',
+                    'download_filename': display_name
                 })
             else:
                 logs[-1] = f"❌ FAILED: {msg}"
@@ -191,18 +285,30 @@ def process_file_route():
                         logs[-1] = f"❌ FAILED: '{os.path.basename(filename_in_zip)}': {msg}"
 
             if success_count > 0:
-                # Save ZIP to static folder for download
-                server_filename = f"processed_results_{int(time.time())}.zip"
-                output_path = os.path.join(STATIC_PATH, server_filename)
-                with open(output_path, 'wb') as f:
+                # Save ZIP to temporary file
+                temp_path = create_temp_file(suffix='.zip')
+                with open(temp_path, 'wb') as f:
                     f.write(output_zip_stream.getvalue())
 
                 logs.append(f"🎉 DONE: Successfully processed {success_count} images. Click download to get the results ZIP.")
+                # Allow optional output name override from form
+                requested_name = request.form.get('output_name', '').strip()
+                if requested_name:
+                    safe_name = secure_filename(requested_name)
+                    if not safe_name.lower().endswith('.zip'):
+                        safe_name = safe_name + '.zip'
+                    download_filename = safe_name
+                else:
+                    download_filename = f'processed_{base_name}.zip'
+
+                # Store desired download filename for this temp file
+                TEMP_NAME_MAP[os.path.basename(temp_path)] = download_filename
+
                 return jsonify({
                     'status': 'success',
                     'logs': logs,
-                    'download_url': f'/static/{server_filename}',
-                    'download_filename': f'processed_{base_name}.zip'
+                    'download_url': f'/download/{os.path.basename(temp_path)}',
+                    'download_filename': download_filename
                 })
             else:
                 return jsonify({'status': 'error', 'logs': logs + ["No images were successfully processed."]})
@@ -214,14 +320,40 @@ def process_file_route():
         print(error_details)
         return jsonify({'status': 'error', 'logs': [f"❌ An unexpected server error occurred: {str(e)}"]})
 
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    """Serve static files"""
-    return send_from_directory(STATIC_PATH, filename)
+@app.route('/download/<path:filename>')
+def download_file(filename):
+    """Serve processed files from temporary directory"""
+    temp_file_path = os.path.join(TEMP_DIR, filename)
+    
+    if not os.path.exists(temp_file_path):
+        return jsonify({'error': 'File not found'}), 404
+        
+    @after_this_request
+    def remove_file(response):
+        try:
+            # Delete the temporary file after sending
+            os.unlink(temp_file_path)
+        except Exception as e:
+            print(f"Error removing temporary file: {e}")
+        return response
+
+    # Determine display filename if available
+    display_name = TEMP_NAME_MAP.pop(filename, None)
+    try:
+        if display_name:
+            # Flask >=2.0 supports download_name
+            return send_file(temp_file_path, as_attachment=True, download_name=display_name)
+        else:
+            return send_file(temp_file_path, as_attachment=True)
+    except TypeError:
+        # Older Flask versions use 'attachment_filename'
+        if display_name:
+            return send_file(temp_file_path, as_attachment=True, attachment_filename=display_name)
+        return send_file(temp_file_path, as_attachment=True)
 
 if __name__ == '__main__':
-    # Create directories
-    os.makedirs(STATIC_PATH, exist_ok=True)
+    # Ensure temporary directory exists
+    os.makedirs(TEMP_DIR, exist_ok=True)
 
     print("🚀 Starting ID Image Processor...")
     print("📍 Application will be available at: http://localhost:5000")

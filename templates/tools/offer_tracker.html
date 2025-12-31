@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+{% block title %}Offer Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <!-- HEADER + BREADCRUMB (UNCHANGED) -->
+    <nav class="mb-6 text-sm">
+        <ol class="flex items-center space-x-2">
+            <li><a href="{{ url_for('index') }}" class="text-orange-500 hover:text-orange-600">Home</a></li>
+            <li><span class="text-slate-400">/</span></li>
+            <li class="text-slate-600 dark:text-slate-400">Offer Tracker</li>
+        </ol>
+    </nav>
+
+    <header class="bg-white dark:bg-slate-800 shadow">
+        <div class="container mx-auto px-4 py-5 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
+                <i class="fas fa-clipboard-check text-orange-500"></i>
+                <span>Offer Release Tracker</span>
+            </h1>
+        </div>
+    </header>
+
+    <!-- BODY TEXT VISIBILITY FIX -->
+    <main class="container mx-auto mt-8 px-4 text-slate-800 dark:text-slate-200">
+
+        <!-- ADD OFFER -->
+        <section class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow mb-8">
+
+            <!-- HEADER + TEMPLATE CONTROLS -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">
+                    Add New Offer
+                </h2>
+
+                <div class="flex gap-2 items-center">
+                    <select id="templateSelect"
+                        class="px-3 py-2 border rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                        <option value="">Templates</option>
+                    </select>
+
+                    <button onclick="applyTemplate()" class="px-3 py-2 bg-slate-600 text-white rounded">
+                        Use
+                    </button>
+                    <button onclick="deleteTemplate()" class="px-3 py-2 bg-red-600 text-white rounded">
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+            <form id="offer-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {% set fields = [
+                        ('Candidate IC No','candidate_ic'),
+                        ('Candidate Name','candidate_name'),
+                        ('Program','program'),
+                        ('Education','education'),
+                        ('Experience','experience'),
+                        ('Offered Salary','offered_salary')
+                    ] %}
+
+                    {% for label, name in fields %}
+                    <div>
+                        <label class="block text-sm">
+                            {{ label }} <span class="text-red-500">*</span>
+                        </label>
+                        <input name="{{ name }}" required
+                            class="w-full px-3 py-2 border rounded
+                                   bg-white dark:bg-slate-700
+                                   text-slate-900 dark:text-slate-200">
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <div>
+                    <label class="block text-sm">Remarks</label>
+                    <textarea name="notes" rows="3"
+                        class="w-full px-3 py-2 border rounded
+                               bg-white dark:bg-slate-700
+                               text-slate-900 dark:text-slate-200"></textarea>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="button" onclick="addOffer()"
+                        class="px-6 py-3 bg-primary text-white rounded hover:bg-orange-600">
+                        ➕ Add Offer
+                    </button>
+
+                    <button type="button" onclick="saveTemplate()"
+                        class="px-6 py-3 bg-slate-600 text-white rounded hover:bg-slate-700">
+                        💾 Save Template
+                    </button>
+                </div>
+
+                <p id="dupWarning" class="text-red-600 text-sm hidden"></p>
+            </form>
+        </section>
+
+        <!-- OFFERS LIST -->
+        <section class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">Offers List</h2>
+                <button onclick="exportLogs()"
+                    class="px-6 py-3 bg-primary text-white rounded">
+                    📤 Export Logs
+                </button>
+            </div>
+
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b text-sm uppercase">
+                        <th class="px-4 py-2">IC</th>
+                        <th class="px-4 py-2">Name</th>
+                        <th class="px-4 py-2">Program</th>
+                        <th class="px-4 py-2">Salary</th>
+                        <th class="px-4 py-2">Date</th>
+                        <th class="px-4 py-2 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="offers-table"></tbody>
+            </table>
+        </section>
+    <!-- ================= EXPERIENCE CALCULATOR OVERLAY ================= -->
+<div id="exp-overlay"
+     class="fixed top-32 right-6 w-80 bg-slate-800 text-white
+            rounded-lg shadow-xl z-50 hidden">
+
+    <!-- Header -->
+    <div id="exp-header"
+         class="flex justify-between items-center px-4 py-2
+                bg-slate-700 cursor-move rounded-t-lg">
+        <span class="font-semibold">Experience Calculator</span>
+        <div class="flex gap-2">
+            <button onclick="toggleExpBody()">—</button>
+            <button onclick="closeExp()">✕</button>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div id="exp-body" class="p-4 space-y-3 text-sm">
+
+        <input id="expCompany" placeholder="Company"
+               class="w-full px-2 py-1 rounded bg-slate-600">
+
+        <input type="date" id="expStart"
+               class="w-full px-2 py-1 rounded bg-slate-600">
+
+        <input type="date" id="expEnd"
+               class="w-full px-2 py-1 rounded bg-slate-600">
+
+        <button onclick="addExp()"
+                class="w-full py-2 bg-blue-600 rounded">
+            Add Experience
+        </button>
+
+        <ul id="expList" class="text-xs space-y-1"></ul>
+
+        <button onclick="calcExp()"
+                class="w-full py-2 bg-green-600 rounded">
+            Calculate
+        </button>
+        <div id="expResult" class="text-sm font-semibold"></div>
+
+        <div id="expBreakup" class="text-xs mt-1 text-slate-300"></div>
+
+         <div id="expOverlap" class="text-xs text-red-400 hidden"></div>
+        <div id="expAge" class="text-xs text-orange-400 hidden"></div>
+
+        <button onclick="applyExpToOffer()"
+        class="w-full py-2 bg-purple-600 rounded text-white">
+    ➜ Add to Offer Experience
+</button>
+
+    </div>
+</div>
+
+<!-- Floating open button -->
+<button onclick="openExp()"
+        class="fixed top-40 right-0 px-3 py-2
+               bg-blue-600 text-white rounded-l-lg z-40">
+    EXP
+</button>
+
+    </main>
+
+    <!-- FOOTER (UNCHANGED) -->
+</div>
+
+<script>
+/* ---------------- OFFERS ---------------- */
+async function addOffer() {
+    const form = document.getElementById('offer-form');
+    if (!form.checkValidity()) return form.reportValidity();
+
+    const res = await fetch('/offer-tracker/add', {
+        method: 'POST',
+        body: new FormData(form)
+    });
+
+    const data = await res.json();
+    const warn = document.getElementById('dupWarning');
+
+    if (res.status === 409) {
+        warn.textContent = data.error;
+        warn.classList.remove('hidden');
+        return;
+    }
+
+    warn.classList.add('hidden');
+    form.reset();
+    renderOffer(data.offer);
+}
+
+function renderOffer(o) {
+    document.getElementById('offers-table').innerHTML += `
+    <tr class="border-b">
+        <td class="px-4 py-2">${o.candidate_ic}</td>
+        <td class="px-4 py-2">${o.candidate_name}</td>
+        <td class="px-4 py-2">${o.program}</td>
+        <td class="px-4 py-2">${o.offered_salary}</td>
+        <td class="px-4 py-2">${o.offer_date}</td>
+        <td class="px-4 py-2 text-right">
+            <i class="fas fa-trash text-red-600 cursor-pointer"
+               onclick="deleteOffer(${o.id})"></i>
+        </td>
+    </tr>`;
+}
+
+async function deleteOffer(id) {
+    if (!confirm('Delete this offer?')) return;
+    await fetch(`/offer-tracker/remove/${id}`, { method: 'DELETE' });
+    location.reload();
+}
+
+/* ---------------- TEMPLATES ---------------- */
+const KEY = 'offerTemplates';
+
+function getTemplates() {
+    return JSON.parse(localStorage.getItem(KEY) || '{}');
+}
+
+function saveTemplates(t) {
+    localStorage.setItem(KEY, JSON.stringify(t));
+    loadTemplateDropdown();
+}
+
+function saveTemplate() {
+    const name = prompt('Template name');
+    if (!name) return;
+
+    const data = Object.fromEntries(
+        new FormData(document.getElementById('offer-form'))
+    );
+
+    const t = getTemplates();
+    t[name] = data;
+    saveTemplates(t);
+}
+
+function loadTemplateDropdown() {
+    const sel = document.getElementById('templateSelect');
+    sel.innerHTML = '<option value="">Templates</option>';
+    Object.keys(getTemplates()).forEach(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        sel.appendChild(o);
+    });
+}
+
+function applyTemplate() {
+    const name = templateSelect.value;
+    if (!name) return;
+
+    const data = getTemplates()[name];
+    Object.keys(data).forEach(k => {
+        const f = document.querySelector(`[name="${k}"]`);
+        if (f) f.value = data[k];
+    });
+}
+
+function deleteTemplate() {
+    const name = templateSelect.value;
+    if (!name || !confirm(`Delete "${name}"?`)) return;
+
+    const t = getTemplates();
+    delete t[name];
+    saveTemplates(t);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    loadTemplateDropdown();
+    const res = await fetch('/offer-tracker/list');
+    const data = await res.json();
+    data.offers.forEach(renderOffer);
+});
+
+function exportLogs() {
+    window.location.href = '/offer-tracker/export';
+}
+/* ================= EXP OVERLAY STATE ================= */
+let expData = [];
+const overlay = document.getElementById('exp-overlay');
+const body = document.getElementById('exp-body');
+
+/* ---------- Open / Close / Minimise ---------- */
+function openExp() {
+    overlay.classList.remove('hidden');
+}
+function closeExp() {
+    overlay.classList.add('hidden');
+}
+function toggleExpBody() {
+    body.classList.toggle('hidden');
+}
+
+/* ---------- Drag Support ---------- */
+(function makeDraggable() {
+    const header = document.getElementById('exp-header');
+    let isDown = false, offsetX = 0, offsetY = 0;
+
+    header.addEventListener('mousedown', e => {
+        isDown = true;
+        offsetX = overlay.offsetLeft - e.clientX;
+        offsetY = overlay.offsetTop - e.clientY;
+    });
+
+    document.addEventListener('mouseup', () => isDown = false);
+    document.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        overlay.style.left = (e.clientX + offsetX) + 'px';
+        overlay.style.top = (e.clientY + offsetY) + 'px';
+    });
+})();
+
+/* ---------- Experience Logic ---------- */
+function addExp() {
+    if (!expCompany.value || !expStart.value) {
+        alert('Company and Start Date required');
+        return;
+    }
+    expData.push({
+        company: expCompany.value,
+        start_date: expStart.value,
+        end_date: expEnd.value
+    });
+    renderExp();
+    expCompany.value = expStart.value = expEnd.value = '';
+}
+
+function renderExp() {
+    expList.innerHTML = '';
+    expData.forEach((e, i) => {
+        expList.innerHTML += `
+            <li>
+                ${e.company} (${e.start_date} → ${e.end_date || 'Present'})
+                <span class="text-red-400 cursor-pointer"
+                      onclick="expData.splice(${i},1);renderExp()">✕</span>
+            </li>`;
+    });
+}
+
+async function calcExp() {
+    if (!expData.length) {
+        alert('Add experience first');
+        return;
+    }
+
+    const bodyData = expData.map(e =>
+        `experiences[]=${encodeURIComponent(
+            `company=${e.company};start_date=${e.start_date};end_date=${e.end_date || ''}`
+        )}`
+    ).join('&');
+
+    const res = await fetch('/exp-calculator/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: bodyData
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+        alert(data.error);
+        return;
+    }
+
+    /* -------- Excel DATEDIF logic -------- */
+    let totalM = 0;
+    let totalMD = 0;
+
+    data.stats.per_experience.forEach(e => {
+        totalM += e.months;     // DATEDIF "M"
+        totalMD += e.days;      // DATEDIF "MD"
+    });
+
+    const finalMonths = Math.round(totalM + (totalMD / 30));
+
+    expResult.textContent = `Final Experience: ${finalMonths}M`;
+
+    expBreakup.textContent =
+        `Breakup → ${totalM} Months + ${totalMD} Days (≈ ${finalMonths}M)`;
+
+    /* -------- Overlap Warning -------- */
+    if (data.stats.overlaps?.length) {
+        expOverlap.classList.remove('hidden');
+        expOverlap.innerHTML =
+            '⚠ Overlapping Employment:<br>' +
+            data.stats.overlaps.map(o =>
+                `${o.company_a} & ${o.company_b} (${o.from} → ${o.to})`
+            ).join('<br>');
+    } else {
+        expOverlap.classList.add('hidden');
+    }
+
+    /* -------- 18 Years Check -------- */
+    if (data.stats.underage) {
+        expAge.classList.remove('hidden');
+        expAge.textContent =
+            `⚠ Experience before age 18 detected.
+18-year eligibility date: ${data.stats.date_18}`;
+    } else {
+        expAge.classList.add('hidden');
+    }
+
+    /* store final months for reuse */
+    window.__FINAL_EXP_MONTHS__ = finalMonths;
+}
+
+function applyExpToOffer() {
+    if (typeof window.__FINAL_EXP_MONTHS__ === 'undefined') {
+        alert('Please calculate experience first');
+        return;
+    }
+
+    /* Find Experience input in Offer form */
+    const expInput = document.querySelector(
+        'input[name="experience"], input#experience'
+    );
+
+    if (!expInput) {
+        alert('Experience field not found in Offer form');
+        return;
+    }
+
+    expInput.value = `${window.__FINAL_EXP_MONTHS__} Months`;
+    expInput.focus();
+
+    alert('Experience added to Offer form');
+}
+</script>
+
+
+{% endblock %}

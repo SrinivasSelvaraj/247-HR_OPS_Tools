@@ -1,114 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Complete PDF Toolkit{% endblock %}
+{% block title %}PDF Toolkit{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
+<div class="max-w-7xl mx-auto">
     <!-- Breadcrumb Navigation -->
     <nav class="mb-6 text-sm">
         <ol class="flex items-center space-x-2">
             <li><a href="{{ url_for('index') }}" class="text-orange-500 hover:text-orange-600">Home</a></li>
             <li><span class="text-slate-400">/</span></li>
-            <li class="text-slate-600 dark:text-slate-400">Complete PDF Toolkit</li>
+            <li class="text-slate-600 dark:text-slate-400">PDF Toolkit</li>
         </ol>
     </nav>
 
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
-            Complete PDF Toolkit
+            <i class="fas fa-file-pdf text-orange-500 mr-3"></i>
+            PDF Toolkit
         </h1>
         <p class="text-lg text-slate-600 dark:text-slate-300">
-            A comprehensive offline PDF toolkit for all your PDF needs. Merge, split, compress, watermark, convert, and extract text from PDF files.
+            Crop and optimize, merge, split and convert PDFs — quick and simple.
         </p>
     </div>
 
-    <!-- Main Content -->
-    <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Operations Panel -->
-        <div class="lg:col-span-1">
+    <!-- Main Content (two-column like ID Processor) -->
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Left: Upload & Options -->
+        <div class="space-y-6">
             <div class="form-section">
-                <h3><i class="fas fa-tools"></i>Select Operation</h3>
-
-                <div class="space-y-3">
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="merge" class="mr-3 text-orange-500" checked>
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Merge PDFs</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Combine multiple PDFs into one</p>
-                        </div>
-                    </label>
-
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="split" class="mr-3 text-orange-500">
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Split PDF</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Separate PDF pages into multiple files</p>
-                        </div>
-                    </label>
-
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="compress" class="mr-3 text-orange-500">
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Compress PDF</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Reduce file size while maintaining quality</p>
-                        </div>
-                    </label>
-
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="watermark" class="mr-3 text-orange-500">
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Add Watermark</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Add text watermark to PDF pages</p>
-                        </div>
-                    </label>
-
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="convert" class="mr-3 text-orange-500">
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Convert to Images</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Convert PDF pages to image files</p>
-                        </div>
-                    </label>
-
-                    <label class="flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <input type="radio" name="operation" value="extract" class="mr-3 text-orange-500">
-                        <div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Extract Text</span>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Extract text content from PDF</p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Operation Options -->
-            <div id="operation-options" class="form-section mt-6">
-                <!-- Options will be dynamically loaded based on selected operation -->
-                <h3><i class="fas fa-cog"></i>Operation Options</h3>
-                <div id="options-content">
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Select an operation to see available options</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Upload Area -->
-        <div class="lg:col-span-2">
-            <!-- File Upload -->
-            <div class="form-section">
-                <h3><i class="fas fa-upload"></i>Upload PDF Files</h3>
-
-                <div class="file-upload-area" id="upload-area">
-                    <input type="file" id="pdf-input" multiple accept=".pdf" class="hidden">
+                <h3><i class="fas fa-upload"></i>Upload Files</h3>
+                <div id="dropZone" class="file-upload-area border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 transition-colors">
+                    <input type="file" id="fileInput" multiple class="hidden" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp">
                     <div class="text-center">
-                        <i class="fas fa-file-pdf text-4xl text-red-500 mb-3"></i>
-                        <p class="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Drop PDF files here or click to browse
-                        </p>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">
-                            Maximum file size: 50MB per PDF<br>
-                            Multiple files supported for merging
-                        </p>
+                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-3"></i>
+                        <p class="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Drop PDF or image files here or click to browse</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Supported: PDF, PNG, JPG, JPEG, GIF, BMP, WEBP — Max 50MB/file</p>
                     </div>
                 </div>
 
@@ -116,61 +43,70 @@
                 <div id="selected-files" class="hidden mt-4 space-y-2"></div>
             </div>
 
-            <!-- Process Button -->
-            <button id="process-btn" type="button" disabled
-                    class="w-full px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fas fa-play mr-2"></i>
-                Process PDF Files
-            </button>
+            <!-- Processing Options -->
+            <div class="form-section">
+                <h3><i class="fas fa-cog"></i>Processing Options</h3>
 
-            <!-- Results Area -->
-            <div id="results-area" class="hidden form-section mt-6">
-                <h3><i class="fas fa-check-circle text-green-500 mr-2"></i>Processing Results</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Operation</label>
+                        <select id="operation-select" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                            <option value="merge">Merge PDFs</option>
+                            <option value="split">Split PDF</option>
+                            <option value="compress">Compress PDF</option>
+                            <option value="watermark">Add Watermark</option>
+                            <option value="convert">PDF → Images</option>
+                            <option value="images_to_pdf">Images → PDF</option>
+                            <option value="rotate">Rotate Pages</option>
+                            <option value="remove_pages">Remove Pages</option>
+                            <option value="pdf_to_word">PDF → Word</option>
+                        </select>
+                    </div>
+
+                    <div id="dynamic-options" class="hidden"></div>
+                </div>
+
+                <button id="process-btn" type="button" disabled class="mt-6 w-full px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 focus:outline-none">
+                    <i class="fas fa-play mr-2"></i>Process Files
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Status & Results -->
+        <div class="space-y-6">
+            <div id="processing-status" class="hidden form-section">
+                <h3><i class="fas fa-info-circle"></i>Processing Status</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Progress</span>
+                        <span id="progress-text" class="text-sm text-slate-600 dark:text-slate-400">0/0 files</span>
+                    </div>
+                    <div class="progress-bar bg-slate-200 dark:bg-slate-600 rounded h-3 overflow-hidden">
+                        <div id="progress-fill" class="h-full bg-orange-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-area" class="hidden form-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h3><i class="fas fa-check-circle"></i>Results</h3>
+                    <div class="flex gap-2">
+                        <a id="download-all-btn" class="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600">Download Result</a>
+                        <button id="clear-btn" class="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600">Clear</button>
+                    </div>
+                </div>
+
                 <div id="results-content"></div>
             </div>
 
-            <!-- Text Extraction Results -->
-            <div id="text-results" class="hidden form-section mt-6">
-                <h3><i class="fas fa-file-alt text-blue-500 mr-2"></i>Extracted Text</h3>
-                <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg max-h-96 overflow-y-auto">
-                    <pre id="extracted-text" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"></pre>
-                </div>
-                <button id="copy-text-btn" class="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    <i class="fas fa-copy mr-2"></i>Copy Text
-                </button>
-            </div>
-
-            <!-- Instructions -->
-            <div class="form-section mt-6">
+            <div class="form-section">
                 <h3><i class="fas fa-question-circle"></i>How to Use</h3>
                 <ol class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    <li>1. Select the PDF operation you want to perform</li>
-                    <li>2. Configure operation options (if applicable)</li>
-                    <li>3. Upload one or more PDF files</li>
-                    <li>4. Click "Process PDF Files" to start</li>
-                    <li>5. Download the processed files when complete</li>
+                    <li>1. Select an operation and upload your files</li>
+                    <li>2. Configure options (when applicable)</li>
+                    <li>3. Click "Process Files" to start</li>
+                    <li>4. Download the processed results</li>
                 </ol>
-            </div>
-
-            <!-- Feature Highlights -->
-            <div class="grid md:grid-cols-2 gap-4 mt-6">
-                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                        <i class="fas fa-shield-alt mr-2"></i>Secure Processing
-                    </h4>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">
-                        All PDF files are processed locally on our servers and automatically deleted after processing.
-                    </p>
-                </div>
-
-                <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                    <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">
-                        <i class="fas fa-bolt mr-2"></i>Fast Processing
-                    </h4>
-                    <p class="text-sm text-green-700 dark:text-green-300">
-                        Optimized algorithms ensure quick processing even for large PDF files and batch operations.
-                    </p>
-                </div>
             </div>
         </div>
     </div>
@@ -180,400 +116,214 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const pdfInput = document.getElementById('pdf-input');
-    const uploadArea = document.getElementById('upload-area');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
     const selectedFilesContainer = document.getElementById('selected-files');
+    const operationSelect = document.getElementById('operation-select');
+    const dynamicOptions = document.getElementById('dynamic-options');
     const processBtn = document.getElementById('process-btn');
-    const operationOptions = document.getElementById('operation-options');
-    const optionsContent = document.getElementById('options-content');
+    const processingStatus = document.getElementById('processing-status');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
     const resultsArea = document.getElementById('results-area');
     const resultsContent = document.getElementById('results-content');
-    const textResults = document.getElementById('text-results');
-    const extractedText = document.getElementById('extracted-text');
+    const downloadAllBtn = document.getElementById('download-all-btn');
+    const clearBtn = document.getElementById('clear-btn');
 
     let selectedFiles = [];
+    let currentOperation = operationSelect.value;
 
-    // Operation options configuration
-    const operationConfigs = {
-        merge: {
-            minFiles: 2,
-            maxFiles: 50,
-            options: `
-                <div class="space-y-4">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <p class="text-sm text-blue-700 dark:text-blue-300">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            Select 2 or more PDF files to merge them into a single document.
-                        </p>
+    const operationOptions = {
+        split: {
+            html: `
+                <div class="space-y-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Split Method</label>
+                        <select id="split-type" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                            <option value="page">Each Page as Separate File</option>
+                            <option value="pages_per_pdf">Pages per File</option>
+                            <option value="even_odd">Even/Odd pages</option>
+                            <option value="halve">Halve pages</option>
+                            <option value="custom">Custom ranges</option>
+                        </select>
                     </div>
-                    <div class="text-sm text-slate-600 dark:text-slate-300">
-                        Files will be merged in the order they appear in the upload list.
+                    <div id="pages-per-file-container" class="hidden">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Pages per File</label>
+                        <input type="number" id="pages-per-file" value="5" min="1" max="100" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                    </div>
+                    <div id="custom-ranges-container" class="hidden">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Custom Ranges</label>
+                        <input type="text" id="custom-ranges" placeholder="e.g., 1-3,5,7-9" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Enter page ranges separated by commas (e.g., 1-3,5,7-9)</p>
                     </div>
                 </div>
             `
         },
-        split: {
-            minFiles: 1,
-            maxFiles: 1,
-            options: `
-                <div class="space-y-4">
+        rotate: {
+            html: `
+                <div class="space-y-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Split Type</label>
-                        <select id="split-type" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                            <option value="page">Each page as separate file</option>
-                            <option value="range">Pages in ranges</option>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Rotation Angle</label>
+                        <select id="rotate-angle" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                            <option value="90">90 Degrees</option>
+                            <option value="180">180 Degrees</option>
+                            <option value="270">270 Degrees</option>
                         </select>
-                    </div>
-                    <div id="pages-range" class="hidden">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pages per file</label>
-                        <input type="number" id="pages-per-file" value="5" min="2" max="50"
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                     </div>
                 </div>
             `
         },
         compress: {
-            minFiles: 1,
-            maxFiles: 1,
-            options: `
-                <div class="space-y-4">
+            html: `
+                <div class="space-y-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Compression Quality</label>
-                        <input type="range" id="compression-quality" min="0.1" max="1" step="0.1" value="0.8"
-                               class="w-full">
-                        <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                            <span>Low Quality (Smaller)</span>
-                            <span id="quality-value">0.8</span>
-                            <span>High Quality (Larger)</span>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Compression Quality</label>
+                        <input type="range" id="compress-quality" min="10" max="95" step="5" value="75" class="w-full">
+                        <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            <span>Smaller</span>
+                            <span id="compress-quality-value">75</span>
+                            <span>Better</span>
                         </div>
                     </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                        <p class="text-sm text-yellow-700 dark:text-yellow-300">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            Higher compression may reduce image quality within the PDF.
-                        </p>
+                </div>
+            `
+        },
+        remove_pages: {
+            html: `
+                <div class="space-y-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Specify Pages</label>
+                        <input type="text" id="remove-pages" placeholder="e.g., 1,3,5 or 1-5" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Enter page numbers separated by commas or ranges (e.g., 1-5)</p>
                     </div>
                 </div>
             `
         },
         watermark: {
-            minFiles: 1,
-            maxFiles: 1,
-            options: `
-                <div class="space-y-4">
+            html: `
+                <div class="space-y-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Watermark Text</label>
-                        <input type="text" id="watermark-text" value="CONFIDENTIAL" placeholder="Enter watermark text"
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Watermark Text</label>
+                        <input type="text" id="watermark-text" placeholder="CONFIDENTIAL" value="CONFIDENTIAL" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Opacity</label>
-                        <input type="range" id="watermark-opacity" min="0.1" max="1" step="0.1" value="0.3"
-                               class="w-full">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Opacity (0.1 - 1.0)</label>
+                        <input type="range" id="watermark-opacity" min="0.1" max="1" step="0.1" value="0.3" class="w-full">
                         <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                            <span>Light</span>
+                            <span>Transparent</span>
                             <span id="opacity-value">0.3</span>
-                            <span>Dark</span>
+                            <span>Opaque</span>
                         </div>
                     </div>
-                </div>
-            `
-        },
-        convert: {
-            minFiles: 1,
-            maxFiles: 1,
-            options: `
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Output Format</label>
-                        <select id="output-format" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                            <option value="PNG">PNG</option>
-                            <option value="JPEG">JPEG</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">DPI (Quality)</label>
-                        <select id="output-dpi" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                            <option value="96">Standard (96 DPI)</option>
-                            <option value="150" selected>High (150 DPI)</option>
-                            <option value="300">Print Quality (300 DPI)</option>
-                        </select>
-                    </div>
-                </div>
-            `
-        },
-        extract: {
-            minFiles: 1,
-            maxFiles: 1,
-            options: `
-                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <p class="text-sm text-blue-700 dark:text-blue-300">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        Text extraction will pull all readable text from the PDF document.
-                        Results will be displayed below for you to copy.
-                    </p>
                 </div>
             `
         }
     };
 
-    // Initialize with merge operation
-    updateOperationOptions('merge');
+    function renderDynamicOptions(op) {
+        dynamicOptions.innerHTML = '';
+        if (operationOptions[op]) {
+            dynamicOptions.innerHTML = operationOptions[op].html;
+            dynamicOptions.classList.remove('hidden');
 
-    // File upload handling
-    uploadArea.addEventListener('click', () => pdfInput.click());
-
-    pdfInput.addEventListener('change', (e) => {
-        handleFileSelect(Array.from(e.target.files));
-    });
-
-    // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        handleFileSelect(Array.from(e.dataTransfer.files));
-    });
-
-    // Operation selection
-    document.querySelectorAll('input[name="operation"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            updateOperationOptions(e.target.value);
-            updateProcessButton();
-        });
-    });
-
-    function updateOperationOptions(operation) {
-        const config = operationConfigs[operation];
-        if (config) {
-            optionsContent.innerHTML = config.options;
-
-            // Setup event listeners for dynamic options
-            setupOptionListeners(operation);
-
-            // Update upload requirements
-            updateUploadArea(operation);
-        }
-    }
-
-    function setupOptionListeners(operation) {
-        // Split type change
-        const splitType = document.getElementById('split-type');
-        const pagesRange = document.getElementById('pages-range');
-        if (splitType && pagesRange) {
-            splitType.addEventListener('change', (e) => {
-                pagesRange.classList.toggle('hidden', e.target.value === 'page');
-            });
-        }
-
-        // Compression quality
-        const compressionQuality = document.getElementById('compression-quality');
-        const qualityValue = document.getElementById('quality-value');
-        if (compressionQuality && qualityValue) {
-            compressionQuality.addEventListener('input', (e) => {
-                qualityValue.textContent = e.target.value;
-            });
-        }
-
-        // Watermark opacity
-        const watermarkOpacity = document.getElementById('watermark-opacity');
-        const opacityValue = document.getElementById('opacity-value');
-        if (watermarkOpacity && opacityValue) {
-            watermarkOpacity.addEventListener('input', (e) => {
-                opacityValue.textContent = e.target.value;
-            });
-        }
-    }
-
-    function updateUploadArea(operation) {
-        const config = operationConfigs[operation];
-        const uploadText = uploadArea.querySelector('p:nth-child(3)');
-
-        if (uploadText) {
-            if (operation === 'merge') {
-                uploadText.innerHTML = 'Maximum file size: 50MB per PDF<br>Select multiple files for merging';
-            } else {
-                uploadText.innerHTML = 'Maximum file size: 50MB per PDF<br>Single file operation';
+            if (op === 'split') {
+                const splitType = document.getElementById('split-type');
+                const pagesContainer = document.getElementById('pages-per-file-container');
+                const customContainer = document.getElementById('custom-ranges-container');
+                const handleSplitChange = () => {
+                    if (splitType.value === 'pages_per_pdf' || splitType.value === 'range') {
+                        pagesContainer.classList.remove('hidden');
+                    } else {
+                        pagesContainer.classList.add('hidden');
+                    }
+                    if (splitType.value === 'custom') {
+                        customContainer.classList.remove('hidden');
+                    } else {
+                        customContainer.classList.add('hidden');
+                    }
+                };
+                splitType.addEventListener('change', handleSplitChange);
+                // initialize visibility
+                handleSplitChange();
             }
-        }
-    }
-
-    function handleFileSelect(files) {
-        const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
-        const config = operationConfigs[selectedOperation];
-
-        selectedFiles = files.filter(file => file.type === 'application/pdf');
-        displaySelectedFiles();
-        updateProcessButton();
-    }
-
-    function displaySelectedFiles() {
-        if (selectedFiles.length === 0) {
-            selectedFilesContainer.classList.add('hidden');
-            return;
-        }
-
-        selectedFilesContainer.innerHTML = `
-            <h4 class="font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Selected Files (${selectedFiles.length})
-            </h4>
-            <div class="space-y-2">
-                ${selectedFiles.map((file, index) => `
-                    <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-700 rounded">
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-file-pdf text-red-500"></i>
-                            <span class="text-sm text-slate-700 dark:text-slate-300">${file.name}</span>
-                            <span class="text-xs text-slate-500">(${HROpsToolkit.formatFileSize(file.size)})</span>
-                        </div>
-                        <button type="button" class="text-red-500 hover:text-red-700" onclick="removeFile(${index})">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        selectedFilesContainer.classList.remove('hidden');
-    }
-
-    function removeFile(index) {
-        selectedFiles.splice(index, 1);
-        displaySelectedFiles();
-        updateProcessButton();
-    }
-
-    function updateProcessButton() {
-        const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
-        const config = operationConfigs[selectedOperation];
-
-        const isValid = selectedFiles.length >= config.minFiles &&
-                       selectedFiles.length <= config.maxFiles;
-
-        processBtn.disabled = !isValid;
-
-        if (isValid) {
-            if (selectedFiles.length === 1) {
-                processBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Process PDF File';
-            } else {
-                processBtn.innerHTML = `<i class="fas fa-play mr-2"></i>Process ${selectedFiles.length} PDF Files`;
+            if (op === 'watermark') {
+                const opacitySlider = document.getElementById('watermark-opacity');
+                const opacityValue = document.getElementById('opacity-value');
+                opacitySlider.addEventListener('input', () => { opacityValue.textContent = opacitySlider.value; });
+            }
+            if (op === 'compress') {
+                const qualitySlider = document.getElementById('compress-quality');
+                const qualityValue = document.getElementById('compress-quality-value');
+                if (qualitySlider) qualitySlider.addEventListener('input', () => { qualityValue.textContent = qualitySlider.value; });
             }
         } else {
-            processBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Process PDF Files';
+            dynamicOptions.classList.add('hidden');
         }
     }
 
-    // Process PDF files
+    renderDynamicOptions(currentOperation);
+    operationSelect.addEventListener('change', (e) => { currentOperation = e.target.value; if (currentOperation === 'images_to_pdf') fileInput.accept = '.png,.jpg,.jpeg,.gif,.bmp,.webp'; else fileInput.accept = '.pdf'; renderDynamicOptions(currentOperation); });
+
+    // File interactions
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10'); });
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10'); handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) { selectedFiles = Array.from(files); updateFilesList(); }
+    function updateFilesList() {
+        if (!selectedFiles || selectedFiles.length === 0) { selectedFilesContainer.classList.add('hidden'); processBtn.disabled = true; return; }
+        selectedFilesContainer.classList.remove('hidden'); processBtn.disabled = false;
+        selectedFilesContainer.innerHTML = selectedFiles.map((file, idx) => `
+            <div class="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-600 rounded mb-2">
+                <span class="text-sm text-slate-700 dark:text-slate-200"><i class="fas fa-file mr-2"></i>${file.name}</span>
+                <button type="button" class="text-red-500 hover:text-red-700 remove-file" data-index="${idx}"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+        document.querySelectorAll('.remove-file').forEach(btn => { btn.addEventListener('click', (e) => { const idx = parseInt(e.target.closest('button').dataset.index); selectedFiles.splice(idx, 1); updateFilesList(); }); });
+    }
+
+    clearBtn.addEventListener('click', () => { selectedFiles = []; updateFilesList(); resultsArea.classList.add('hidden'); resultsContent.innerHTML = ''; });
+
+    // Process
     processBtn.addEventListener('click', async () => {
-        if (selectedFiles.length === 0) return;
-
-        const formData = new FormData();
-        selectedFiles.forEach(file => {
-            formData.append('pdfs', file);
-        });
-
-        const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
-        formData.append('operation', selectedOperation);
-
-        // Add operation-specific parameters
-        if (selectedOperation === 'split') {
-            formData.append('split_type', document.getElementById('split-type').value);
-            formData.append('pages_per_file', document.getElementById('pages-per-file').value);
-        } else if (selectedOperation === 'compress') {
-            formData.append('quality', document.getElementById('compression-quality').value);
-        } else if (selectedOperation === 'watermark') {
-            formData.append('watermark_text', document.getElementById('watermark-text').value);
-            formData.append('opacity', document.getElementById('watermark-opacity').value);
-        } else if (selectedOperation === 'convert') {
-            formData.append('format', document.getElementById('output-format').value);
-            formData.append('dpi', document.getElementById('output-dpi').value);
+        if (selectedFiles.length === 0) { alert('Please select files'); return; }
+        const formData = new FormData(); selectedFiles.forEach(f => formData.append('pdfs', f)); formData.append('operation', operationSelect.value);
+        const op = operationSelect.value;
+        if (op === 'split') {
+            const st = document.getElementById('split-type');
+            const ppf = document.getElementById('pages-per-file');
+            const custom = document.getElementById('custom-ranges');
+            if (st) formData.append('split_type', st.value);
+            if (ppf && !ppf.classList.contains('hidden')) formData.append('pages_per_file', ppf.value);
+            if (custom && !custom.classList.contains('hidden') && custom.value.trim()) formData.append('custom_ranges', custom.value.trim());
         }
+        if (op === 'compress') {
+            const q = document.getElementById('compress-quality');
+            if (q) formData.append('quality', q.value);
+        }
+        if (op === 'rotate') { const angle = document.getElementById('rotate-angle'); if (angle) formData.append('angle', angle.value); }
+        if (op === 'remove_pages') { const pages = document.getElementById('remove-pages'); if (!pages || !pages.value.trim()) { alert('Please specify pages to remove'); return; } formData.append('pages', pages.value); }
+        if (op === 'watermark') { const text = document.getElementById('watermark-text'); const opacity = document.getElementById('watermark-opacity'); if (text) formData.append('watermark_text', text.value); if (opacity) formData.append('opacity', opacity.value); }
 
         try {
-            processBtn.disabled = true;
-            processBtn.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Processing...';
-
-            // Hide previous results
-            resultsArea.classList.add('hidden');
-            textResults.classList.add('hidden');
-
-            if (selectedOperation === 'extract') {
-                // For text extraction, use a different approach
-                const response = await fetch('/pdf-toolkit/process', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    extractedText.textContent = result.text;
-                    textResults.classList.remove('hidden');
-                    HROpsToolkit.showNotification('Text extracted successfully!', 'success');
-                    HROpsToolkit.trackEvent('pdf_text_extracted', {
-                        text_length: result.text_length
-                    });
-                } else {
-                    throw new Error(result.error || 'Extraction failed');
-                }
+            processingStatus.classList.remove('hidden'); progressFill.style.width = '10%'; progressText.textContent = 'Starting...'; processBtn.disabled = true;
+            const response = await fetch('/pdf-toolkit/process', { method: 'POST', body: formData });
+            if (!response.ok) { const err = await response.json().catch(() => null); throw new Error(err ? (err.error || JSON.stringify(err)) : `HTTP ${response.status}`); }
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await response.json(); if (data.text) { progressFill.style.width = '100%'; progressText.textContent = 'Done'; resultsContent.innerHTML = `<div class="p-4 bg-white dark:bg-slate-700 rounded max-h-56 overflow-y-auto"><pre class="whitespace-pre-wrap">${escapeHtml(data.text)}</pre></div>`; resultsArea.classList.remove('hidden'); }
             } else {
-                // For file operations, trigger download
-                const response = await fetch('/pdf-toolkit/process', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const filename = getDownloadFilename(selectedOperation);
-                    HROpsToolkit.downloadFile(blob, filename);
-                    HROpsToolkit.showNotification('PDF operation completed successfully!', 'success');
-                    HROpsToolkit.trackEvent('pdf_operation_completed', {
-                        operation: selectedOperation,
-                        files_count: selectedFiles.length
-                    });
-                } else {
-                    throw new Error('Processing failed');
-                }
+                const blob = await response.blob(); progressFill.style.width = '100%'; progressText.textContent = 'Done';
+                let filename = getFilenameFromResponse(response); if (!filename) { if (blob.type.includes('zip')) filename = `${op}_${Date.now()}.zip`; else if (blob.type.includes('word') || blob.type.includes('officedocument')) filename = `${op}_${Date.now()}.docx`; else filename = `${op}_${Date.now()}.pdf`; }
+                const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 1000); resultsArea.classList.remove('hidden');
             }
-        } catch (error) {
-            HROpsToolkit.showNotification('Processing failed: ' + error.message, 'error');
-        } finally {
-            processBtn.disabled = false;
-            processBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Process PDF Files';
-        }
+        } catch (err) { alert('Error: ' + err.message); } finally { processBtn.disabled = false; }
     });
 
-    function getDownloadFilename(operation) {
-        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-        const filenames = {
-            merge: `merged_pdfs_${timestamp}.pdf`,
-            split: `split_pdfs_${timestamp}.zip`,
-            compress: `compressed_pdf_${timestamp}.pdf`,
-            watermark: `watermarked_pdf_${timestamp}.pdf`,
-            convert: `pdf_images_${timestamp}.zip`
-        };
-        return filenames[operation] || `pdf_operation_${timestamp}.pdf`;
-    }
-
-    // Copy text functionality
-    document.getElementById('copy-text-btn').addEventListener('click', () => {
-        const text = extractedText.textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            HROpsToolkit.showNotification('Text copied to clipboard!', 'success');
-        }).catch(() => {
-            HROpsToolkit.showNotification('Failed to copy text', 'error');
-        });
-    });
-
-    // Initialize
-    updateProcessButton();
+    function getFilenameFromResponse(response) { const disposition = response.headers.get('content-disposition'); if (!disposition) return null; const matches = /filename[^;=\\n]*=(['\"]?)([^'\";\\n]*)\1/.exec(disposition); return matches && matches[2] ? matches[2] : null; }
+    function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return String(text).replace(/[&<>"']/g, m => map[m]); }
 });
 </script>
 {% endblock %}

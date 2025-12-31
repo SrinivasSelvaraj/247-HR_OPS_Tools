@@ -4,300 +4,130 @@
 
 {% block content %}
 <div class="text-center mb-12">
-    <h1 class="text-5xl font-bold text-slate-900 dark:text-white animate-fade-in">HR Operations Toolkit</h1>
-    <p class="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto animate-fade-in" style="animation-delay: 0.1s;">
-        Your centralized hub for powerful, efficient, and intuitive HR tools.
-    </p>
+	<h1 class="text-5xl font-bold text-white animate-fade-in">HR Operations Toolkit</h1>
+	<p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto animate-fade-in" style="animation-delay: 0.1s;">
+		Your centralized hub for powerful, efficient, and intuitive HR tools.
+	</p>
 
-    <!-- Filter and Sort Controls -->
-    <div class="mt-8 flex flex-wrap justify-center gap-4 animate-fade-in" style="animation-delay: 0.2s;">
-        <!-- Category Filters -->
-        <div class="flex flex-wrap gap-2" id="category-filters">
-            <button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-orange-500 text-white" data-category="all">
-                All Tools
-            </button>
-            <button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600" data-category="document">
-                <i class="fas fa-file-alt mr-1"></i> Documents
-            </button>
-            <button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600" data-category="employee">
-                <i class="fas fa-users mr-1"></i> Employee Management
-            </button>
-            <button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600" data-category="analytics">
-                <i class="fas fa-chart-bar mr-1"></i> Analytics
-            </button>
-        </div>
+	<!-- Filter and Sort Controls -->
+	<div class="mt-8 flex flex-wrap justify-center gap-4 animate-fade-in" style="animation-delay: 0.2s;">
+		<div class="flex flex-wrap gap-2" id="category-filters">
+			<button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-orange-500 text-white" data-category="all">
+				All Tools
+			</button>
+			<button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-700 text-slate-200 hover:bg-slate-600" data-category="document">
+				<i class="fas fa-file-alt mr-1"></i> Documents
+			</button>
+			<button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-700 text-slate-200 hover:bg-slate-600" data-category="employee">
+				<i class="fas fa-users mr-1"></i> Employee Management
+			</button>
+			<button class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-slate-700 text-slate-200 hover:bg-slate-600" data-category="analytics">
+				<i class="fas fa-chart-bar mr-1"></i> Analytics
+			</button>
+		</div>
 
-        <!-- Sort Options -->
-        <div class="flex items-center gap-2">
-            <label for="sort-select" class="text-sm font-medium text-slate-700 dark:text-slate-300">Sort:</label>
-            <select id="sort-select" class="px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                <option value="name">Alphabetical</option>
-                <option value="popular">Most Used</option>
-                <option value="recent">Recently Added</option>
-            </select>
-        </div>
-    </div>
+		<div class="flex items-center gap-2">
+			<label class="text-sm font-medium text-slate-300">Sort:</label>
+			<select id="sort-select" class="px-3 py-2 text-sm bg-slate-800 border border-slate-600 rounded-lg text-slate-200 focus:ring-orange-500">
+				<option value="name">Alphabetical</option>
+				<option value="popular">Most Used</option>
+				<option value="recent">Recently Added</option>
+			</select>
+		</div>
+	</div>
 </div>
 
 <!-- Tools Grid -->
 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" id="tools-grid">
-    {% for tool in tools %}
-    <div class="tool-card bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-xl shadow-sm cursor-pointer animate-fade-in transition-all duration-300 ease-in-out hover:shadow-xl hover:dark:shadow-black/30 hover:scale-105 hover:ring-2 hover:ring-orange-500 active:scale-95 {% if tool.highlighted %} ring-2 ring-orange-500 {% endif %}"
-         data-name="{{ tool.name|lower }}"
-         data-description="{{ tool.description|lower }}"
-         data-category="{{ tool.category or 'document' }}"
-         data-popularity="{{ tool.popularity or 5 }}"
-         data-recent="{{ '1' if tool.recent_added else '0' }}"
-         style="animation-delay: 0.{{ loop.index }}s;"
-         onclick="window.location.href='{{ tool.url }}'">
+	{% for tool in tools %}
+	<div class="tool-card bg-slate-800/60 p-6 rounded-xl shadow transition-all hover:shadow-xl hover:scale-105 hover:ring-2 hover:ring-orange-500"
+		 data-name="{{ tool.name|lower }}"
+		 data-category="{{ tool.category }}"
+		 data-popularity="{{ tool.popularity or 5 }}"
+		 data-recent="{{ '1' if tool.recent_added else '0' }}"
+		 onclick="window.location.href='{{ tool.url }}'">
 
-        <!-- Status Indicator -->
-        {% if tool.status %}
-        <div class="absolute top-2 right-2">
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                {% if tool.status == 'available' %} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                {% elif tool.status == 'maintenance' %} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-                {% elif tool.status == 'new' %} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
-                {% endif %}">
-                {% if tool.status == 'available' %}<i class="fas fa-check mr-1"></i> Available
-                {% elif tool.status == 'maintenance' %}<i class="fas fa-tools mr-1"></i> Maintenance
-                {% elif tool.status == 'new' %}<i class="fas fa-sparkles mr-1"></i> New
-                {% endif %}
-            </span>
-        </div>
-        {% endif %}
+		<div class="flex justify-center mb-4">
+			<i class="{{ tool.icon }} text-4xl text-orange-400"></i>
+		</div>
 
-        <!-- Tool Icon -->
-        <div class="flex justify-center mb-4">
-            <div class="relative">
-                <i class="{{ tool.icon }} text-4xl text-orange-500 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6"></i>
-                {% if tool.popularity %}
-                <div class="absolute -top-1 -right-1 bg-yellow-400 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                    {{ tool.popularity }}
-                </div>
-                {% endif %}
-            </div>
-        </div>
+		<h3 class="text-lg font-semibold text-white mb-2">{{ tool.name }}</h3>
+		<p class="text-sm text-slate-300 mb-4">{{ tool.description }}</p>
 
-        <!-- Tool Information -->
-        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{{ tool.name }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ tool.description }}</p>
-
-        <!-- Tool Actions -->
-        <div class="flex justify-between items-center mt-auto">
-            {% if tool.last_used %}
-            <span class="text-xs text-slate-400 dark:text-slate-500">
-                <i class="fas fa-clock mr-1"></i> {{ tool.last_used }}
-            </span>
-            {% endif %}
-            <span class="text-orange-500 hover:text-orange-600 text-sm font-medium">
-                Launch <i class="fas fa-arrow-right ml-1"></i>
-            </span>
-        </div>
-    </div>
-    {% endfor %}
+		<div class="flex justify-between items-center">
+			<span class="text-orange-400 font-medium text-sm">Launch →</span>
+		</div>
+	</div>
+	{% endfor %}
 </div>
 
-<!-- Quick Stats Dashboard -->
-<div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.8s;">
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-        <div class="flex items-center">
-            <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-                <i class="fas fa-chart-line text-blue-600 dark:text-blue-400"></i>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-medium text-slate-900 dark:text-white">Total Usage</h3>
-                <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">1,247</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400">This month</p>
-            </div>
-        </div>
-    </div>
+<!-- WHY HR TEAMS CHOOSE THIS -->
+<div class="mt-20">
+	<h2 class="text-2xl font-semibold text-center text-white mb-10">
+		Why HR Operations Can  Choose This Toolkit
+	</h2>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-        <div class="flex items-center">
-            <div class="flex-shrink-0 bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                <i class="fas fa-users text-green-600 dark:text-green-400"></i>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-medium text-slate-900 dark:text-white">Active Users</h3>
-                <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">89</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400">This week</p>
-            </div>
-        </div>
-    </div>
+	<div class="grid md:grid-cols-3 gap-6">
+		<div class="bg-slate-900/60 border border-slate-600 p-6 rounded-lg">
+			<i class="fas fa-bolt text-orange-400 text-2xl mb-3"></i>
+			<h3 class="font-semibold text-lg text-white">Equivalent to HRMS Functions</h3>
+			<p class="text-sm text-slate-300">
+				Instant checks without navigating to HRMS systems.
+			</p>
+		</div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-        <div class="flex items-center">
-            <div class="flex-shrink-0 bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
-                <i class="fas fa-clock text-purple-600 dark:text-purple-400"></i>
-            </div>
-            <div class="ml-4">
-                <h3 class="text-lg font-medium text-slate-900 dark:text-white">Time Saved</h3>
-                <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">142h</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400">This month</p>
-            </div>
-        </div>
-    </div>
+		<div class="bg-slate-900/60 border border-slate-600 p-6 rounded-lg">
+			<i class="fas fa-clock text-green-400 text-2xl mb-3"></i>
+			<h3 class="font-semibold text-lg text-white">Less Time Consuming</h3>
+			<p class="text-sm text-slate-300">
+				Reduces manual follow-ups and operational dependency.
+			</p>
+		</div>
+
+		<div class="bg-slate-900/60 border border-slate-600 p-6 rounded-lg">
+			<i class="fas fa-shield-alt text-blue-400 text-2xl mb-3"></i>
+			<h3 class="font-semibold text-lg text-white">Best for Ramps</h3>
+			<p class="text-sm text-slate-300">
+				Built to handle hiring spikes and large-scale operations.
+			</p>
+		</div>
+	</div>
 </div>
 
-<!-- Recent Activity Feed -->
-<div class="mt-12 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-    <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">
-        <i class="fas fa-history mr-2 text-orange-500"></i>Recent Activity
-    </h2>
-    <div class="space-y-3" id="activity-feed">
-        <div class="flex items-center space-x-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-            <div class="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full"></div>
-            <div class="flex-grow">
-                <p class="text-sm text-slate-700 dark:text-slate-300">
-                    <span class="font-medium">John Doe</span> processed <span class="font-medium">25 ID images</span> using ID Image Processor
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">2 minutes ago</p>
-            </div>
-        </div>
+<!-- FUTURE DEVELOPMENTS -->
+<div class="mt-20 bg-slate-900/70 border border-slate-600 p-8 rounded-xl">
+	<h2 class="text-xl font-semibold text-white mb-6">Future Developments</h2>
 
-        <div class="flex items-center space-x-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-            <div class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></div>
-            <div class="flex-grow">
-                <p class="text-sm text-slate-700 dark:text-slate-300">
-                    <span class="font-medium">Jane Smith</span> verified <span class="font-medium">employee exit status</span> for 3 candidates
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">15 minutes ago</p>
-            </div>
-        </div>
+	<div class="space-y-5">
+		<div class="flex items-start gap-4">
+			<i class="fas fa-robot text-orange-400 text-xl"></i>
+			<div>
+				<h3 class="font-medium text-white">AI Chatbot for HR Policies</h3>
+				<p class="text-sm text-slate-300">
+					Instant answers for [24]7.ai HR policies, FAQs, and guidelines.
+				</p>
+			</div>
+		</div>
 
-        <div class="flex items-center space-x-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-            <div class="flex-shrink-0 w-2 h-2 bg-purple-500 rounded-full"></div>
-            <div class="flex-grow">
-                <p class="text-sm text-slate-700 dark:text-slate-300">
-                    <span class="font-medium">Mike Johnson</span> generated <span class="font-medium">offer tracker report</span>
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">1 hour ago</p>
-            </div>
-        </div>
-    </div>
+		<div class="flex items-start gap-4">
+			<i class="fas fa-brain text-purple-400 text-xl"></i>
+			<div>
+				<h3 class="font-medium text-white">AI Agent for Exception Approvals</h3>
+				<p class="text-sm text-slate-300">
+					Smart approvals and escalation support for HR exceptions.
+				</p>
+			</div>
+		</div>
+
+		<div class="flex items-start gap-4">
+			<i class="fas fa-id-card text-green-400 text-xl"></i>
+			<div>
+				<h3 class="font-medium text-white">Bulk EMP ID Creation</h3>
+				<p class="text-sm text-slate-300">
+					Automated employee ID generation during onboarding.
+				</p>
+			</div>
+		</div>
+	</div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Category filtering
-    const categoryButtons = document.querySelectorAll('.category-filter');
-    const toolCards = document.querySelectorAll('.tool-card');
-
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const category = button.dataset.category;
-
-            // Update button styles
-            categoryButtons.forEach(btn => {
-                btn.classList.remove('bg-orange-500', 'text-white');
-                btn.classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
-            });
-            button.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
-            button.classList.add('bg-orange-500', 'text-white');
-
-            // Filter tools
-            toolCards.forEach(card => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = '';
-                    card.classList.remove('opacity-50', 'scale-95');
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    });
-
-    // Sort functionality
-    const sortSelect = document.getElementById('sort-select');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', () => {
-            const sortBy = sortSelect.value;
-            sortTools(sortBy);
-        });
-    }
-
-    function sortTools(sortBy) {
-        const grid = document.getElementById('tools-grid');
-        const cards = Array.from(grid.querySelectorAll('.tool-card'));
-
-        cards.sort((a, b) => {
-            switch (sortBy) {
-                case 'name':
-                    return a.dataset.name.localeCompare(b.dataset.name);
-                case 'popular':
-                    return (b.dataset.popularity || 5) - (a.dataset.popularity || 5);
-                case 'recent':
-                    return (b.dataset.recent || '0') - (a.dataset.recent || '0');
-                default:
-                    return 0;
-            }
-        });
-
-        cards.forEach(card => grid.appendChild(card));
-    }
-
-    // Add categories to tool cards (for demonstration)
-    const toolCategories = {
-        'ID Image Processor': 'document',
-        'Complete PDF Toolkit': 'document',
-        'Employee Exit Verifier': 'employee',
-        'Candidate Experience Calculator': 'analytics',
-        'Offer Release Tracker': 'employee',
-        'Employee ID Availability': 'employee'
-    };
-
-    toolCards.forEach(card => {
-        const toolName = card.querySelector('h3')?.textContent;
-        if (toolName && toolCategories[toolName]) {
-            card.dataset.category = toolCategories[toolName];
-        }
-    });
-
-    // Simulate real-time activity updates
-    function addActivityEntry(user, action, target, time) {
-        const activityFeed = document.getElementById('activity-feed');
-        if (!activityFeed) return;
-
-        const colors = ['green', 'blue', 'purple', 'yellow', 'red'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-        const newEntry = document.createElement('div');
-        newEntry.className = 'flex items-center space-x-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 animate-slide-in';
-        newEntry.innerHTML = `
-            <div class="flex-shrink-0 w-2 h-2 bg-${randomColor}-500 rounded-full"></div>
-            <div class="flex-grow">
-                <p class="text-sm text-slate-700 dark:text-slate-300">
-                    <span class="font-medium">${user}</span> ${action} <span class="font-medium">${target}</span>
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">${time}</p>
-            </div>
-        `;
-
-        activityFeed.insertBefore(newEntry, activityFeed.firstChild);
-
-        // Remove old entries if too many
-        while (activityFeed.children.length > 5) {
-            activityFeed.removeChild(activityFeed.lastChild);
-        }
-    }
-
-    // Add some simulated activity every 30 seconds
-    setInterval(() => {
-        const users = ['Alice Brown', 'Bob Wilson', 'Carol Davis', 'David Martinez', 'Eva Thompson'];
-        const actions = ['processed', 'verified', 'generated', 'updated', 'checked'];
-        const targets = ['ID images', 'exit status', 'reports', 'employee data', 'PDF documents'];
-        const times = ['Just now', '30 seconds ago', '1 minute ago'];
-
-        const randomUser = users[Math.floor(Math.random() * users.length)];
-        const randomAction = actions[Math.floor(Math.random() * actions.length)];
-        const randomTarget = targets[Math.floor(Math.random() * targets.length)];
-        const randomTime = times[0];
-
-        addActivityEntry(randomUser, randomAction, randomTarget, randomTime);
-    }, 30000);
-});
-</script>
 {% endblock %}

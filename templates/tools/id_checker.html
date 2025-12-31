@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Employee ID Availability{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <nav class="mb-6 text-sm">
+        <ol class="flex items-center space-x-2">
+            <li><a href="{{ url_for('index') }}" class="text-orange-500 hover:text-orange-600">Home</a></li>
+            <li><span class="text-slate-400">/</span></li>
+            <li class="text-slate-600 dark:text-slate-400">Employee ID Availability</li>
+        </ol>
+    </nav>
+
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2"><i class="fas fa-magnifying-glass-plus text-orange-500 mr-3"></i> Employee ID Availability</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Upload the Current Job Report or New Joinees report (Excel) exported from HRMS — 3 months export recommended. The tool will scan Emp IDs and Locations and compute the next available EMP ID for each site.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <div class="form-section bg-white dark:bg-slate-800 rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4"><i class="fas fa-upload"></i> Upload New Joinees Excel</h3>
+            <div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
+                <div class="flex items-center.justify-between">
+                    <strong class="text-blue-900 dark:text-blue-100">Instructions</strong>
+                    <div class="text-sm text-blue-700 dark:text-blue-200">Tabs: <button id="tab-instr" class="px-2 py-1 bg-white dark:bg-slate-700 rounded">Instructions</button> <button id="tab-workflow" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">Workflow</button></div>
+                </div>
+
+                <div id="instr-content" class="mt-2 text-sm text-blue-800 dark:text-blue-100">
+                    <ul class="list-disc ml-5">
+                        <li>Do not edit the downloaded file from HRMS — upload it as-is.</li>
+                        <li>You may upload either the <em>Current Job Report</em> or the <em>New Joinees Report</em> (3 months export).</li>
+                        <li>The tool will scan employee IDs and locations and compute the next available EMP ID per site.</li>
+                        <li>Note: Bangalore and Shillong use the same ID prefix in results (grouped together).</li>
+                    </ul>
+                </div>
+
+                <div id="workflow-content" class="hidden mt-2 text-sm text-blue-800 dark:text-blue-100">
+                    <ul class="list-disc ml-5">
+                        <li>Download the appropriate report from HRMS (Current Job or New Joinees — 3 months).</li>
+                        <li>Do not modify the downloaded Excel; directly upload the file here.</li>
+                        <li>Click Analyze and wait for the tool to finish scanning IDs and DOJ values.</li>
+                        <li>Review the results; the tool groups Bangalore and Shillong together and shows last DOJ.</li>
+                        <li>Use the results to pick the next IDs and record them in your HR system.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <form id="idchecker-form" class="space-y-4" enctype="multipart/form-data">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Excel / ZIP file</label>
+                    <input type="file" id="excel-file" name="file" accept=".xlsx,.xls,.zip" class="w-full" />
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="analyze-btn" class="px-4 py-2 bg-orange-500 text-white rounded">Analyze</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section bg-white dark:bg-slate-800 rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4"><i class="fas fa-list"></i> Results</h3>
+            <div id="id-results" class="text-sm text-slate-700 dark:text-slate-300">
+                <p>No analysis yet. Upload a file and click Analyze.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+/* Simple popup animation */
+.id-popup {
+  position: fixed;
+  right: 24px;
+  bottom: 40px;
+  background: #0ea5e9; /* blue-500 */
+  color: white;
+  padding: 12px 18px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.5);
+  transform-origin: bottom right;
+  animation: popupIn 420ms ease forwards;
+  z-index: 9999;
+}
+@keyframes popupIn {
+  from { transform: scale(0.75) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.fade-in {
+  animation: fadeIn 260ms ease forwards;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity:1; transform: translateY(0);} }
+</style>
+
+<script>
+document.getElementById('tab-instr').addEventListener('click', () => {
+    document.getElementById('instr-content').classList.remove('hidden');
+    document.getElementById('workflow-content').classList.add('hidden');
+});
+document.getElementById('tab-workflow').addEventListener('click', () => {
+    document.getElementById('instr-content').classList.add('hidden');
+    document.getElementById('workflow-content').classList.remove('hidden');
+});
+
+function showPopup(text) {
+    const popup = document.createElement('div');
+    popup.className = 'id-popup';
+    popup.innerHTML = `<strong>Next ID:</strong> <span style="font-weight:700; margin-left:8px">${text}</span>`;
+    document.body.appendChild(popup);
+    setTimeout(() => { popup.style.opacity = '0'; popup.style.transform = 'translateY(10px) scale(0.95)'; }, 3600);
+    setTimeout(() => popup.remove(), 4200);
+}
+
+async function renderResults(data) {
+    if (!data || !data.results) return;
+    const res = data.results;
+    const container = document.getElementById('id-results');
+    let html = '<div class="bg-blue-50 dark:bg-slate-700 p-4 rounded fade-in">';
+        html += '<div class="grid grid-cols-1 gap-3">';
+    const labelMap = {
+        'bangalore_shillong': 'Bangalore & Shillong',
+        'bangalore': 'Bangalore',
+        'shillong': 'Shillong',
+        'hyderabad': 'Hyderabad'
+    };
+    for (const loc of Object.keys(res)) {
+        const r = res[loc];
+        const last = r.last_id ? r.last_id : '-';
+        const next = r.next_id ? r.next_id : '-';
+        const doj = r.last_doj ? r.last_doj : '-';
+        const title = labelMap[loc] || (loc.charAt(0).toUpperCase()+loc.slice(1));
+        html += `<div class="p-3 bg-white dark:bg-slate-800 rounded border"><div class="text-sm text-slate-600 dark:text-slate-300 font-semibold">${title}</div><div class="mt-1 text-sm">Last used: <code class="text-slate-700 dark:text-slate-200">${last}</code></div><div class="mt-1 text-sm">Last DOJ: <code class="text-slate-700 dark:text-slate-200">${doj}</code></div><div class="mt-1 text-sm">Next available: <code class="text-orange-600 dark:text-orange-300 font-bold">${next}</code></div></div>`;
+    }
+    html += '</div></div>';
+    container.innerHTML = html;
+
+    // show popup for first next id
+    const firstKey = Object.keys(res)[0];
+    if (firstKey && res[firstKey] && res[firstKey].next_id) {
+        showPopup(res[firstKey].next_id);
+    }
+}
+
+document.getElementById('analyze-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('excel-file');
+    const form = new FormData();
+    if (fileInput.files && fileInput.files.length) {
+        form.append('file', fileInput.files[0]);
+    } else {
+        alert('Please choose a file to upload.');
+        return;
+    }
+
+    document.getElementById('id-results').innerHTML = '<p>Processing...</p>';
+    try {
+        const resp = await fetch('/id-checker/analyze', { method: 'POST', body: form });
+        const j = await resp.json();
+        if (j.success) {
+            renderResults(j);
+        } else {
+            document.getElementById('id-results').innerText = j.error || 'Processing failed';
+        }
+    } catch (err) {
+        document.getElementById('id-results').innerText = 'Request failed: ' + err.message;
+    }
+});
+</script>
+{% endblock %}

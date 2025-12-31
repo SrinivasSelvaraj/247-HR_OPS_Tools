@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Instant Employee Exit Check{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <nav class="mb-6 text-sm">
+        <ol class="flex items-center space-x-2">
+            <li><a href="{{ url_for('index') }}" class="text-orange-500 hover:text-orange-600">Home</a></li>
+            <li><span class="text-slate-400">/</span></li>
+            <li class="text-slate-600 dark:text-slate-400">Instant Employee Exit check</li>
+        </ol>
+    </nav>
+
+    <div class="form-section bg-white dark:bg-slate-800 rounded-lg p-6">
+        <header class="app-header mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div style="display:flex;align-items:center;">
+                    <img id="site-logo" src="{{ url_for('static', filename='images/24-7-logo.jpg') }}" alt="Logo" class="logo h-12" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div id="logo-fallback" style="display:none; align-items:center; font-weight:700; color:var(--accent-primary);">24-7 HR OPS</div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Instant Employee Exit check</h1>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">Data available till 25-sept-2025</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-3 gap-4 mb-4">
+            <div class="lg:col-span-2">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button id="tab-verify" class="px-3 py-2 bg-orange-500 text-white rounded">Verify</button>
+                        <div class="text-sm text-slate-400 ml-3 hidden md:block">Quick search and DOB filter</div>
+                    </div>
+                    <div>
+                        <button id="configure-btn" title="Configure" class="px-2 py-2 bg-slate-700 text-white rounded flex items-center gap-2">
+                            <span style="font-size:14px;">⚙️</span>
+                            <span class="hidden sm:inline">Configure</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="panel-verify">
+                    <div class="search-box flex flex-col md:flex-row gap-2 items-center">
+                        <input id="empid-input" type="text" placeholder="Search by Employee ID..." class="flex-1 px-3 py-2 border rounded bg-white dark:bg-slate-700 text-slate-800" />
+                        <button id="search-btn" class="px-4 py-2 bg-orange-500 text-white rounded">Search</button>
+                        <div class="dob-group ml-2 flex items-center gap-2" style="min-width:220px;">
+                            <input id="dob-input" type="date" class="w-full px-3 py-2 border rounded bg-slate-700 text-white" />
+                            <button id="dob-btn" class="px-4 py-2 bg-slate-600 text-white rounded">Filter by DOB</button>
+                        </div>
+                    </div>
+
+                    <div id="results-container" class="mt-4 text-sm text-slate-700 dark:text-slate-300">
+                        <p class="message">Enter search criteria to view employee details.</p>
+                    </div>
+                </div>
+
+                <div id="panel-config" class="hidden">
+                    <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded border mb-4">
+                        <h3 class="font-semibold mb-2">Upload new employee data</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Upload an Excel (.xlsx/.xls) or CSV file to replace the current dataset. The file will be converted to Parquet for faster processing.</p>
+                        <div class="mt-3 flex gap-2">
+                            <input id="data-file" type="file" accept=".xlsx,.xls,.csv" />
+                            <button id="upload-data-btn" class="px-3 py-2 bg-orange-500 text-white rounded">Upload & Convert</button>
+                        </div>
+                        <div id="config-status" class="mt-3 text-sm"></div>
+                    </div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">Current data path: <strong>data/uploads/employee_data.parquet</strong></div>
+                    <div id="env-status" class="mt-2 text-sm"></div>
+                </div>
+
+            </div>
+            <aside class="lg:col-span-1">
+                <div class="instructions-panel">
+                    <h3 class="font-semibold">Instructions & Tips</h3>
+                   <ul class="list-disc ml-5 mt-2 text-sm">
+    <li>
+        Upload only <strong>new employee records</strong> after the last available data.
+    </li>
+    <li>
+        Uploaded data will be <strong>appended</strong> to existing records — not replaced.
+    </li>
+    <li>
+        Employee ID must be unique. Duplicate IDs will be skipped automatically.
+    </li>
+    <li>
+        Download the sample template, fill data in the same format, then upload.
+    </li>
+    <li>
+        Supported formats: Excel (.xlsx/.xls) and CSV.
+    </li>
+</ul>
+
+<div class="mt-3">
+    <a href="/exit-verifier/download-template"
+       class="text-orange-500 underline text-sm">
+       Download Sample Upload Template
+    </a>
+</div>
+
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+    :root { --text-green: #28a745; --text-red: #dc3545; }
+    .text-green { color: var(--text-green); }
+    .text-red { color: var(--text-red); }
+    .warning-box { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 6px; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.5); }
+    .status-alert { padding: 0.75rem 1rem; border-radius: 6px; background: #fff3f0; border: 1px solid #ffd6cc; color: #7f1d1d; }
+    .status-ok { padding: 0.75rem 1rem; border-radius: 6px; background: #ecfeff; border: 1px solid #99f6e4; color: #065f46; }
+    .instructions-panel { background: #08363f; color: #f8ffff; padding: 1rem; border-radius: 8px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const resultsContainer = document.getElementById('results-container');
+
+    function searchEmployee() {
+        const empid = document.getElementById('empid-input').value.trim();
+        if (!empid) { alert('Please enter an Employee ID.'); return; }
+        const formData = new FormData();
+        formData.append('employee_id', empid);
+        fetchData('/exit-verifier/verify', { method: 'POST', body: formData }, displayFullResults);
+    }
+
+    function filterByDob() {
+        const dob = document.getElementById('dob-input').value;
+        if (!dob) { alert('Please select a Date of Birth.'); return; }
+        fetchData(`/exit-verifier/filter_by_dob_summary?dob=${encodeURIComponent(dob)}`, { method: 'GET' }, displayDobSummary);
+    }
+
+  function fetchData(url, options, displayFunction) {
+    resultsContainer.innerHTML = `<p class="message">Loading...</p>`;
+
+    fetch(url, options)
+        .then(async resp => {
+            const data = await resp.json();
+            if (!resp.ok) {
+                throw new Error(data.message || data.error || 'EMP ID is not active or not found');
+            }
+            return data;
+        })
+        .then(data => displayFunction(data))
+        .catch(err => {
+            resultsContainer.innerHTML =
+                `<p class="message text-red">${err.message}</p>`;
+        });
+}
+
+   function getEmployeeDetails(employeeId) {
+    if (!employeeId) return;
+
+    document.getElementById('empid-input').value = employeeId;
+    searchEmployee(); // triggers full verify
+}
+
+
+    // Attach event listeners
+    document.getElementById('search-btn').addEventListener('click', searchEmployee);
+    document.getElementById('dob-btn').addEventListener('click', filterByDob);
+    
+    // Tab handling
+    const verifyTab = document.getElementById('tab-verify');
+    const configureBtn = document.getElementById('configure-btn');
+    const verifyPanel = document.getElementById('panel-verify');
+    const configPanel = document.getElementById('panel-config');
+
+    verifyTab.addEventListener('click', () => {
+        verifyPanel.classList.remove('hidden');
+        configPanel.classList.add('hidden');
+    });
+    configureBtn.addEventListener('click', () => {
+        verifyPanel.classList.add('hidden');
+        configPanel.classList.remove('hidden');
+    });
+
+    // Configure upload handler
+    document.getElementById('upload-data-btn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('data-file');
+        const statusEl = document.getElementById('config-status');
+        if (!fileInput.files.length) {
+            alert('Please select a file to upload.'); return;
+        }
+        const form = new FormData();
+        form.append('file', fileInput.files[0]);
+        statusEl.className = '';
+        statusEl.innerText = 'Uploading and converting...';
+
+        try {
+            const resp = await fetch('/exit-verifier/configure', { method: 'POST', body: form });
+            const result = await resp.json();
+            if (result.success) {
+                statusEl.className = 'status-ok';
+                statusEl.innerText = result.message;
+            } else {
+                statusEl.className = 'status-alert';
+                statusEl.innerText = 'Error: ' + (result.error || 'Upload failed.');
+            }
+        } catch (err) {
+            statusEl.className = 'status-alert';
+            statusEl.innerText = 'Request failed: ' + err.message;
+        }
+    });
+
+    // --- Display Functions ---
+    function displayFullResults(response) {
+        resultsContainer.innerHTML = '';
+        if (!response.success) {
+            resultsContainer.innerHTML = `<p class="message text-red">${response.error || response.message}</p>`; return;
+        }
+        
+        const employee = response.data;
+        if (!employee) { resultsContainer.innerHTML = `<p class="message">Employee not found.</p>`; return; }
+
+        const get = (k) => employee[k] !== undefined && employee[k] !== null ? employee[k] : 'Not Available';
+
+        // Rehire logic
+        const isRehirable = /yes|eligible|true/i.test(get('Rehire'));
+        const rehireDisplay = isRehirable ? `<span class="text-green">${get('Rehire')} &#10004;</span>` : `<span class="text-red">${get('Rehire')}</span>`;
+        const rehireWarning = (!isRehirable || get('Rehire') === 'Not Available') ? `<div class="warning-box">Contact HR-ER for clarification on rehire status.</div>` : '';
+
+        // FFS logic
+        const ffsVal = parseFloat(String(get('FFS')).replace(/[^0-9.-]/g,''));
+        let ffsDisplay = get('FFS');
+        if (!isNaN(ffsVal)) { ffsDisplay = `<span class="${ffsVal < 0 ? 'text-red' : 'text-green'}">${ffsVal}</span>`; }
+        const ffsWarning = (ffsVal < 0 || get('FFS') === 'Not Available') ? `<div class="warning-box">Contact HR Payroll for clarification on FFS.</div>` : '';
+
+        resultsContainer.innerHTML = `
+            <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-xl text-orange-400 font-bold">${get('Employee Name')}</h2>
+                        <div class="text-sm text-slate-400">${get('Designation')}</div>
+                    </div>
+                    <div class="text-sm bg-orange-600 text-white px-3 py-1 rounded">ID: ${get('Employee ID').startsWith('0') ? get('Employee ID') : '0' + get('Employee ID')}</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="detail-item"><strong>DOJ:</strong> ${get('DOJ')}</div>
+                    <div class="detail-item"><strong>Last Working Date:</strong> ${get('Last Working Date')}</div>
+                    <div class="detail-item"><strong>DOB:</strong> ${get('DOB')}</div>
+                    <div class="detail-item"><strong>FFS:</strong> ${ffsDisplay}</div>
+                    <div class="detail-item"><strong>Rehire Status:</strong> ${rehireDisplay}</div>
+                    <div class="detail-item"><strong>Exit Type:</strong> ${get('Exit Type')}</div>
+                    <div class="detail-item"><strong>Location:</strong> ${get('Location')}</div>
+                    <div class="detail-item"><strong>Level:</strong> ${get('Level')}</div>
+                    <div class="detail-item"><strong>Grade:</strong> ${get('Grade')}</div>
+                </div>
+                ${ffsWarning}
+                ${rehireWarning}
+            </div>
+        `;
+    }
+
+    function displayDobSummary(response) {
+        resultsContainer.innerHTML = '';
+        if (!response.success) {
+            resultsContainer.innerHTML = `<p class="message text-red">${response.error || response.message}</p>`; return;
+        }
+        
+        const data = response.data;
+        if (!data || data.length === 0) { resultsContainer.innerHTML = `<p class="message">No employees found with this DOB.</p>`; return; }
+
+        let html = '<div class="grid md:grid-cols-2 gap-4">';
+        data.forEach(emp => {
+            const isRehirable = /yes|eligible|true/i.test(emp.Rehire);
+            const ffsVal = parseFloat(String(emp.FFS).replace(/[^0-9.-]/g,''));
+            const ffsDisplay = !isNaN(ffsVal) ? `<span class="${ffsVal < 0 ? 'text-red' : 'text-green'}">${ffsVal}</span>` : emp.FFS;
+            html += `
+                <div class="employee-placard p-3 border rounded cursor-pointer" onclick="getEmployeeDetails('${emp['Employee ID']}')">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="name font-semibold text-orange-400">${emp['Employee Name']}</div>
+                            <div class="empid text-sm text-slate-400">ID: ${emp['Employee ID']}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="placard-rehire text-lg">${isRehirable ? '✔️' : '✖️'}</div>
+                            <div class="placard-ffs font-bold">${ffsDisplay}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        resultsContainer.innerHTML = html;
+    }
+    
+    // Function to attach click handler to dynamically created elements
+ 
+    
+    // (This part is simplified in the final version - direct onclick is used)
+});
+
+function fetchData(url, displayFunction) {
+    resultsContainer.innerHTML = `<p class="message">Loading...</p>`;
+
+    fetch(url)
+        .then(async response => {
+            const data = await response.json();
+
+            // Handle known, valid backend responses
+            if (!response.ok) {
+                if (data.message) {
+                    throw new Error(data.message);
+                }
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                throw new Error('EMP ID is not active or not found.');
+            }
+
+            return data;
+        })
+        .then(data => displayFunction(data))
+        .catch(error => {
+            console.error('Fetch error:', error);
+            resultsContainer.innerHTML = `
+                <p class="message text-red">
+                    ${error.message || 'EMP ID is active or not found.'}
+                </p>`;
+        });
+}
+</script>
+
+
+</script>
+{% endblock %}
