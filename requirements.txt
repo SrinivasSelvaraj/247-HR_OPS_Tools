@@ -45,8 +45,17 @@ Flask-Caching==2.1.0
 
 # Monitoring and logging
 gunicorn==21.2.0
-Flask
-pandas
-pyarrow
-openpyxl
-gunicorn
+Flask==2.3.3
+Werkzeug==2.3.7
+
+gunicorn==21.2.0
+
+numpy==1.26.4
+pandas==2.2.2
+
+opencv-python-headless==4.9.0.80
+Pillow==10.2.0
+PyMuPDF==1.23.26
+
+python-dateutil
+
