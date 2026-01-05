@@ -23,10 +23,11 @@ def add_offer():
         return jsonify(error='Duplicate IC No found'), 409
 
     offer = {
-        'id': len(offers_db) + 1,
+        'Sl No': len(offers_db) + 1,
         'candidate_ic': ic,
         'candidate_name': request.form['candidate_name'],
         'program': request.form['program'],
+        'DOJ': request.form['DOJ'],
         'education': request.form['education'],
         'experience': request.form['experience'],
         'offered_salary': request.form['offered_salary'],

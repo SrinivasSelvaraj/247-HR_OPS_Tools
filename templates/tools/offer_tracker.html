@@ -56,6 +56,7 @@
                         ('Candidate IC No','candidate_ic'),
                         ('Candidate Name','candidate_name'),
                         ('Program','program'),
+                        ('DOJ','DOJ'),
                         ('Education','education'),
                         ('Experience','experience'),
                         ('Offered Salary','offered_salary')
@@ -115,6 +116,9 @@
                         <th class="px-4 py-2">IC</th>
                         <th class="px-4 py-2">Name</th>
                         <th class="px-4 py-2">Program</th>
+                        <th class="px-4 py-2">DOJ</th>
+                        <th class="px-4 py-2">Education</th>
+                        <th class="px-4 py-2">Experience</th>
                         <th class="px-4 py-2">Salary</th>
                         <th class="px-4 py-2">Date</th>
                         <th class="px-4 py-2 text-right">Action</th>
@@ -220,6 +224,9 @@ function renderOffer(o) {
         <td class="px-4 py-2">${o.candidate_ic}</td>
         <td class="px-4 py-2">${o.candidate_name}</td>
         <td class="px-4 py-2">${o.program}</td>
+        <td class="px-4 py-2">${o.DOJ}</td>
+        <td class="px-4 py-2">${o.education}</td>
+        <td class="px-4 py-2">${o.experience}</td>
         <td class="px-4 py-2">${o.offered_salary}</td>
         <td class="px-4 py-2">${o.offer_date}</td>
         <td class="px-4 py-2 text-right">
