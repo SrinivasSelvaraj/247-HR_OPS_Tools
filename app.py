@@ -253,7 +253,7 @@ def create_app(config_class=None):
 
     @app.route("/health")
     def health():
-    return "OK", 200
+      return "OK", 200
 
 
     @app.route('/filter_by_dob_summary', methods=['GET'])
