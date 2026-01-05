@@ -220,8 +220,8 @@ MAX_CONTENT_LENGTH=16777216
 ## 📞 Support
 
 For support or questions:
-- Email: hr-ops@247-inc.com
-- Extension: 010111628
+- Email: Srinivasselvaraj731@gmail.com
+- Extension: 9742590609
 - Response time: Usually within 24 hours
 
 ## 📄 License
